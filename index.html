@@ -11,15 +11,20 @@
   --gold: #c9a84c; --gold-dim: #8a6b28; --gold-pale: #e8d5a0;
   --ink: #0d0b08; --text-faint: #9e8c6e; --text-mid: #c4a96a;
   --line: rgba(201,168,76,0.22); --line-s: rgba(201,168,76,0.5);
+  --header-h: 52px; --timenav-h: 44px;
+  --sidebar-w: 272px; --info-w: 252px;
+  --sheet-h: 52vh;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; min-height:100vh; overflow:hidden; }
 
-/* ── HEADER ── */
+/* ══════════════════════════════════════════
+   HEADER
+══════════════════════════════════════════ */
 .site-header {
-  height:52px; background:#0a0806; border-bottom:1px solid var(--line);
+  height:var(--header-h); background:#0a0806; border-bottom:1px solid var(--line);
   display:flex; align-items:center; justify-content:space-between; padding:0 1.5rem;
-  flex-shrink:0;
+  flex-shrink:0; position:relative; z-index:40;
 }
 .logo { font-family:'Cinzel',serif; font-size:1.1rem; color:var(--gold); letter-spacing:0.18em; }
 .logo small { font-family:'Crimson Pro',serif; font-size:0.6rem; color:var(--text-faint); font-style:italic; letter-spacing:0.25em; display:block; margin-top:1px; }
@@ -35,55 +40,90 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
 .tab-btn.active  { background:var(--gold); color:#0a0806; border-color:var(--gold); }
 .tab-btn:not(.active):hover { color:var(--gold); border-color:var(--line-s); }
 
-/* ── TIME NAVIGATOR ── */
-.time-nav {
-  height:44px; background:#0c0a07; border-bottom:1px solid var(--line);
-  display:flex; align-items:center; justify-content:center; gap:0; flex-shrink:0;
+/* Mobile hamburger / panel toggles — hidden on desktop */
+.mob-toggle {
+  display:none; background:transparent; border:1px solid var(--line);
+  color:var(--text-faint); font-size:1rem; width:36px; height:36px;
+  border-radius:4px; cursor:pointer; align-items:center; justify-content:center;
+  transition:all 0.15s; flex-shrink:0;
 }
+.mob-toggle:active { background:rgba(201,168,76,0.12); color:var(--gold); }
+
+/* ══════════════════════════════════════════
+   TIME NAVIGATOR
+══════════════════════════════════════════ */
+.time-nav {
+  height:var(--timenav-h); background:#0c0a07; border-bottom:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center; gap:0; flex-shrink:0;
+  overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none;
+}
+.time-nav::-webkit-scrollbar { display:none; }
 .time-display {
   font-family:'Cinzel',serif; font-size:0.78rem; color:var(--gold);
-  letter-spacing:0.1em; padding:0 1.4rem; min-width:260px; text-align:center;
+  letter-spacing:0.1em; padding:0 1.4rem; min-width:200px; text-align:center;
+  white-space:nowrap;
 }
 .time-display span { font-family:'Crimson Pro',serif; font-size:0.65rem; color:var(--text-faint); font-style:italic; display:block; letter-spacing:0.05em; margin-top:1px; }
-.nav-group { display:flex; gap:0; align-items:center; }
+.nav-group { display:flex; gap:0; align-items:center; flex-shrink:0; }
 .nav-label { font-family:'Crimson Pro',serif; font-size:0.6rem; color:var(--text-faint); font-style:italic; letter-spacing:0.1em; padding:0 0.5rem; text-transform:uppercase; }
 .nav-btn {
   width:30px; height:30px; background:transparent;
   border:1px solid rgba(201,168,76,0.18); color:var(--text-faint);
   cursor:pointer; font-size:0.7rem; transition:all 0.15s;
-  display:flex; align-items:center; justify-content:center;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
 }
 .nav-btn+.nav-btn { border-left:none; }
 .nav-btn:first-child { border-radius:3px 0 0 3px; }
 .nav-btn:last-child  { border-radius:0 3px 3px 0; }
 .nav-btn:hover { background:rgba(201,168,76,0.12); color:var(--gold); border-color:var(--line-s); }
 .nav-btn:active { background:rgba(201,168,76,0.2); }
-.nav-sep { width:1px; height:24px; background:var(--line); margin:0 0.8rem; }
+.nav-sep { width:1px; height:24px; background:var(--line); margin:0 0.5rem; flex-shrink:0; }
 .now-btn {
   font-family:'Cinzel',serif; font-size:0.55rem; letter-spacing:0.12em;
   padding:0.3rem 0.8rem; background:transparent; border:1px solid var(--line-s);
   color:var(--gold); cursor:pointer; border-radius:3px; text-transform:uppercase;
-  transition:all 0.15s; margin-left:0.6rem;
+  transition:all 0.15s; margin-left:0.6rem; flex-shrink:0; white-space:nowrap;
 }
 .now-btn:hover { background:rgba(201,168,76,0.12); }
+/* nav btn groups spacing */
+.nav-group:not(:first-child) { margin-left:4px; }
 
-/* ── APP LAYOUT ── */
-.app { display:flex; height:calc(100vh - 96px); }
-
+/* ══════════════════════════════════════════
+   APP LAYOUT — desktop 3-column
+══════════════════════════════════════════ */
+.app {
+  display:flex;
+  height:calc(100vh - var(--header-h) - var(--timenav-h));
+  position:relative; overflow:hidden;
+}
 .sidebar {
-  width:272px; min-width:272px; background:#0f0d09;
+  width:var(--sidebar-w); min-width:var(--sidebar-w); background:#0f0d09;
   border-right:1px solid var(--line); overflow-y:auto; padding:1.2rem;
+  flex-shrink:0; transition:transform 0.28s cubic-bezier(.4,0,.2,1);
+  z-index:20;
 }
 .chart-area {
   flex:1; background:var(--ink); display:flex; flex-direction:column;
   align-items:center; justify-content:center; overflow:hidden; position:relative;
+  min-width:0;
 }
 .info-panel {
-  width:252px; min-width:252px; background:#0f0d09;
+  width:var(--info-w); min-width:var(--info-w); background:#0f0d09;
   border-left:1px solid var(--line); overflow-y:auto; padding:1.2rem;
+  flex-shrink:0; transition:transform 0.28s cubic-bezier(.4,0,.2,1);
+  z-index:20;
 }
 
-/* ── FORMS ── */
+/* ── Overlay (mobile/tablet backdrop) ── */
+.panel-overlay {
+  display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55);
+  z-index:19; backdrop-filter:blur(2px);
+}
+.panel-overlay.visible { display:block; }
+
+/* ══════════════════════════════════════════
+   FORMS
+══════════════════════════════════════════ */
 .sec { font-family:'Cinzel',serif; font-size:0.56rem; letter-spacing:0.25em; text-transform:uppercase; color:var(--gold); margin-bottom:0.85rem; padding-bottom:0.4rem; border-bottom:1px solid var(--line); }
 .fg { margin-bottom:0.75rem; position:relative; }
 .fg label { display:block; font-size:0.68rem; color:var(--text-faint); margin-bottom:0.25rem; letter-spacing:0.04em; font-style:italic; }
@@ -105,10 +145,12 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
 }
 .calc-btn:hover { opacity:0.85; }
 
-/* ── LOCATION SEARCH ── */
+/* ══════════════════════════════════════════
+   LOCATION SEARCH
+══════════════════════════════════════════ */
 .loc-wrap { position:relative; }
 .loc-suggestions {
-  position:absolute; top:calc(100% + 2px); left:0; right:0; z-index:100;
+  position:absolute; top:calc(100% + 2px); left:0; right:0; z-index:200;
   background:#1a1610; border:1px solid var(--line-s); border-radius:3px;
   max-height:180px; overflow-y:auto; display:none;
 }
@@ -118,14 +160,16 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
   cursor:pointer; border-bottom:1px solid rgba(201,168,76,0.08);
   transition:background 0.12s;
 }
-.loc-item:hover { background:rgba(201,168,76,0.1); }
+.loc-item:hover,.loc-item:active { background:rgba(201,168,76,0.1); }
 .loc-item small { display:block; font-size:0.68rem; color:var(--text-faint); font-style:italic; }
 .loc-coords { font-size:0.7rem; color:var(--text-faint); font-style:italic; margin-top:0.2rem; }
 .tz-resolving { color:var(--gold-dim); animation:pulse 1.2s infinite; }
 .tz-ok  { color:#66bb6a; }
 .tz-err { color:#ef9a9a; }
 
-/* ── INFO PANEL ── */
+/* ══════════════════════════════════════════
+   INFO PANEL CONTENT
+══════════════════════════════════════════ */
 .planet-row { display:flex; align-items:center; gap:0.5rem; padding:0.3rem 0; border-bottom:1px solid rgba(201,168,76,0.07); font-size:0.82rem; }
 .pg { width:20px; text-align:center; font-size:0.95rem; }
 .pn { color:var(--text-faint); font-size:0.7rem; min-width:50px; font-style:italic; }
@@ -141,26 +185,34 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
 .hc { color:var(--gold-pale); flex:1; }
 .hs { color:var(--text-faint); font-size:0.7rem; font-style:italic; }
 
-/* ── STATUS ── */
+/* ══════════════════════════════════════════
+   STATUS BAR
+══════════════════════════════════════════ */
 .status-bar {
-  position:absolute; bottom:0.8rem; left:50%; transform:translateX(-50%);
+  position:absolute; bottom:4rem; left:50%; transform:translateX(-50%);
   background:rgba(13,11,8,0.94); border:1px solid rgba(201,168,76,0.3);
   color:var(--gold-pale); padding:0.35rem 1rem; border-radius:20px;
   font-size:0.74rem; font-style:italic; pointer-events:none; opacity:0;
-  transition:opacity 0.3s; white-space:nowrap;
+  transition:opacity 0.3s; white-space:nowrap; z-index:6;
 }
 .status-bar.show { opacity:1; }
 
-/* ── TABS ── */
+/* ══════════════════════════════════════════
+   TABS
+══════════════════════════════════════════ */
 .tab-content { display:none; }
 .tab-content.active { display:block; }
 
-/* ── COMPAT SCORE ── */
+/* ══════════════════════════════════════════
+   COMPAT SCORE
+══════════════════════════════════════════ */
 .compat-score { text-align:center; padding:0.8rem; background:rgba(201,168,76,0.05); border:1px solid rgba(201,168,76,0.18); border-radius:5px; margin-bottom:0.8rem; }
 .compat-num { font-family:'Cinzel',serif; font-size:2.2rem; color:var(--gold); }
 .compat-lbl { font-size:0.65rem; color:var(--text-faint); font-style:italic; }
 
-/* ── LOADING ── */
+/* ══════════════════════════════════════════
+   LOADING
+══════════════════════════════════════════ */
 .loading-overlay {
   position:absolute; inset:0; background:var(--ink);
   display:flex; align-items:center; justify-content:center; flex-direction:column; gap:0.8rem; z-index:10;
@@ -172,23 +224,22 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
 
 .empty { text-align:center; color:var(--text-faint); font-style:italic; font-size:0.8rem; padding:1.5rem 0; }
 
-/* ── SIGN GLYPHS — force typographic rendering via Noto Sans Symbols ── */
+/* ── SIGN GLYPHS ── */
 .pp, .hs, .hc { font-family: 'Noto Sans Symbols', 'Crimson Pro', serif; }
 ::-webkit-scrollbar { width:3px; }
 ::-webkit-scrollbar-track { background:transparent; }
 ::-webkit-scrollbar-thumb { background:rgba(201,168,76,0.25); border-radius:2px; }
 
-/* nav btn groups spacing */
-.nav-group:not(:first-child) { margin-left:4px; }
-
-/* ── CHART CONTROLS ── */
+/* ══════════════════════════════════════════
+   CHART CONTROLS
+══════════════════════════════════════════ */
 .chart-controls {
   position:absolute; bottom:1.2rem; left:50%; transform:translateX(-50%);
   display:flex; gap:0; z-index:5; align-items:center;
 }
 .ctrl-btn {
   font-family:'Cinzel',serif; font-size:0.52rem; letter-spacing:0.11em;
-  padding:0.32rem 0.75rem; background:rgba(13,11,8,0.88); 
+  padding:0.32rem 0.75rem; background:rgba(13,11,8,0.88);
   border:1px solid rgba(201,168,76,0.25); color:var(--text-faint);
   cursor:pointer; transition:all 0.18s; text-transform:uppercase;
   display:flex; align-items:center; gap:0.35rem; white-space:nowrap;
@@ -205,7 +256,9 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
   background:rgba(201,168,76,0.3); transition:background 0.18s;
 }
 
-/* ── PLANET TOOLTIP ── */
+/* ══════════════════════════════════════════
+   PLANET TOOLTIP (desktop hover)
+══════════════════════════════════════════ */
 #planet-tooltip {
   position:fixed; z-index:999; pointer-events:none;
   background:rgba(10,8,5,0.96); border:1px solid rgba(201,168,76,0.4);
@@ -213,35 +266,221 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
   display:none; box-shadow:0 4px 20px rgba(0,0,0,0.6);
   backdrop-filter:blur(6px);
 }
-#planet-tooltip .tt-name {
-  font-family:'Cinzel',serif; font-size:0.68rem; letter-spacing:0.12em;
-  color:var(--gold); margin-bottom:0.3rem;
-}
+#planet-tooltip .tt-name { font-family:'Cinzel',serif; font-size:0.68rem; letter-spacing:0.12em; color:var(--gold); margin-bottom:0.3rem; }
 #planet-tooltip .tt-pos  { font-size:0.82rem; color:var(--gold-pale); margin-bottom:0.15rem; }
 #planet-tooltip .tt-house { font-size:0.72rem; color:var(--text-faint); font-style:italic; }
 #planet-tooltip .tt-asp  { margin-top:0.35rem; padding-top:0.35rem; border-top:1px solid rgba(201,168,76,0.15); }
 #planet-tooltip .tt-asp-row { font-size:0.72rem; color:var(--text-faint); line-height:1.55; }
 
-/* ── HIGHLIGHT STATES ── */
-.aspect-row.highlighted {
-  background:rgba(201,168,76,0.1);
-  border-radius:3px;
+/* ── Mobile planet info panel (tap-triggered, bottom sheet) ── */
+#mob-planet-info {
+  display:none; position:fixed; bottom:0; left:0; right:0; z-index:300;
+  background:#0f0d09; border-top:1px solid rgba(201,168,76,0.35);
+  border-radius:14px 14px 0 0; padding:1rem 1.2rem 1.4rem;
+  box-shadow:0 -8px 32px rgba(0,0,0,0.6);
+  transform:translateY(100%); transition:transform 0.28s cubic-bezier(.4,0,.2,1);
 }
+#mob-planet-info.open { display:block; transform:translateY(0); }
+#mob-planet-info .mob-pi-handle {
+  width:36px; height:3px; background:rgba(201,168,76,0.3); border-radius:2px;
+  margin:0 auto 0.8rem; display:block;
+}
+#mob-planet-info .mob-pi-head {
+  display:flex; align-items:baseline; gap:0.6rem; margin-bottom:0.4rem;
+}
+#mob-planet-info .mob-pi-name { font-family:'Cinzel',serif; font-size:0.9rem; letter-spacing:0.12em; }
+#mob-planet-info .mob-pi-pos  { font-size:0.95rem; color:var(--gold-pale); }
+#mob-planet-info .mob-pi-house { font-size:0.75rem; color:var(--text-faint); font-style:italic; }
+#mob-planet-info .mob-pi-asps { margin-top:0.55rem; display:flex; flex-wrap:wrap; gap:0.4rem; }
+#mob-planet-info .mob-asp-chip {
+  font-size:0.72rem; padding:0.18rem 0.5rem; border-radius:20px;
+  background:rgba(201,168,76,0.08); border:1px solid rgba(201,168,76,0.2);
+  color:var(--gold-pale); white-space:nowrap;
+}
+#mob-planet-info-close {
+  position:absolute; top:0.75rem; right:1rem;
+  background:transparent; border:none; color:var(--text-faint);
+  font-size:1.1rem; cursor:pointer; padding:0.2rem;
+}
+
+/* ══════════════════════════════════════════
+   HIGHLIGHT STATES
+══════════════════════════════════════════ */
+.aspect-row.highlighted { background:rgba(201,168,76,0.1); border-radius:3px; }
 .aspect-row.dimmed { opacity:0.2; transition:opacity 0.15s; }
 .planet-row.highlighted { background:rgba(201,168,76,0.08); border-radius:3px; }
+
+/* ══════════════════════════════════════════
+   MOBILE BOTTOM NAV BAR
+══════════════════════════════════════════ */
+.mob-bar {
+  display:none; position:fixed; bottom:0; left:0; right:0; z-index:30;
+  background:#0a0806; border-top:1px solid var(--line);
+  height:54px; align-items:stretch;
+}
+.mob-bar-btn {
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  background:transparent; border:none; color:var(--text-faint);
+  font-family:'Cinzel',serif; font-size:0.42rem; letter-spacing:0.1em;
+  text-transform:uppercase; cursor:pointer; gap:3px;
+  border-right:1px solid var(--line); transition:all 0.15s;
+  padding:0 0.2rem;
+}
+.mob-bar-btn:last-child { border-right:none; }
+.mob-bar-btn .mbb-icon { font-size:1.1rem; line-height:1; }
+.mob-bar-btn.active,.mob-bar-btn:active { color:var(--gold); background:rgba(201,168,76,0.06); }
+
+/* ══════════════════════════════════════════
+   TABLET  768–1023px
+══════════════════════════════════════════ */
+@media (max-width:1023px) {
+  :root { --sidebar-w:280px; --info-w:260px; }
+
+  /* Header shrinks logo subtitle */
+  .logo small { display:none; }
+
+  /* Tab nav labels shorten */
+  .tab-btn { padding:0.42rem 0.65rem; font-size:0.58rem; letter-spacing:0.1em; }
+
+  /* Show sidebar/info toggle buttons */
+  .mob-toggle { display:flex; }
+
+  /* Sidebar becomes a left drawer */
+  .sidebar {
+    position:absolute; top:0; left:0; bottom:0;
+    transform:translateX(-100%);
+    box-shadow:4px 0 24px rgba(0,0,0,0.5);
+  }
+  .sidebar.open { transform:translateX(0); }
+
+  /* Info panel becomes a right drawer */
+  .info-panel {
+    position:absolute; top:0; right:0; bottom:0;
+    transform:translateX(100%);
+    box-shadow:-4px 0 24px rgba(0,0,0,0.5);
+  }
+  .info-panel.open { transform:translateX(0); }
+
+  /* Chart fills whole space */
+  .app { overflow:hidden; }
+
+  /* Time nav: allow horizontal scroll, hide right duplicate groups */
+  .time-nav-right { display:none; }
+  .hide-mob { display:none !important; }
+
+  /* Status bar higher so it clears bottom controls */
+  .status-bar { bottom:4.5rem; }
+}
+
+/* ══════════════════════════════════════════
+   MOBILE  ≤767px
+══════════════════════════════════════════ */
+@media (max-width:767px) {
+  :root {
+    --header-h: 48px;
+    --timenav-h: 38px;
+  }
+
+  body { overflow:hidden; }
+
+  /* ── Header ── */
+  .site-header { padding:0 0.75rem; }
+  .logo { font-size:0.9rem; letter-spacing:0.12em; }
+  .tab-nav { display:none; }          /* replaced by bottom bar */
+
+  /* ── Time nav: compact single row ── */
+  .time-nav { height:var(--timenav-h); padding:0 0.5rem; justify-content:space-between; overflow-x:auto; }
+  .time-display { font-size:0.65rem; min-width:0; padding:0 0.6rem; letter-spacing:0.04em; }
+  .time-display span { font-size:0.55rem; }
+  .nav-sep { margin:0 0.3rem; }
+  /* Hide year nav on mobile — available via long-press feel through the +/- d/m */
+  .nav-group.hide-mob { display:none; }
+
+  /* ── App layout: chart takes full screen ── */
+  .app {
+    height:calc(100vh - var(--header-h) - var(--timenav-h) - 54px); /* 54px = mob-bar */
+  }
+
+  /* ── Sidebar: full-screen left sheet ── */
+  .sidebar {
+    position:fixed; top:var(--header-h); left:0;
+    bottom:54px; width:min(320px, 88vw);
+    transform:translateX(-100%);
+    z-index:50; box-shadow:6px 0 32px rgba(0,0,0,0.65);
+  }
+  .sidebar.open { transform:translateX(0); }
+
+  /* ── Info panel: bottom sheet ── */
+  .info-panel {
+    position:fixed; bottom:54px; left:0; right:0;
+    width:100%; height:var(--sheet-h);
+    min-width:unset; border-left:none;
+    border-top:1px solid var(--line);
+    border-radius:14px 14px 0 0;
+    transform:translateY(100%);
+    z-index:50; box-shadow:0 -6px 32px rgba(0,0,0,0.6);
+  }
+  .info-panel.open { transform:translateY(0); }
+
+  /* drag handle for info panel */
+  .info-panel::before {
+    content:''; display:block; width:36px; height:3px;
+    background:rgba(201,168,76,0.3); border-radius:2px;
+    margin:0.6rem auto 0.8rem;
+  }
+
+  /* ── Chart controls: smaller, higher ── */
+  .chart-controls { bottom:1rem; }
+  .ctrl-btn { padding:0.28rem 0.55rem; font-size:0.48rem; }
+
+  /* ── Status bar ── */
+  .status-bar { bottom:5rem; font-size:0.68rem; }
+
+  /* ── Bottom nav bar: visible ── */
+  .mob-bar { display:flex; }
+
+  /* ── Toggle buttons ── */
+  .mob-toggle { display:flex; }
+
+  /* ── Touch targets: bigger inputs ── */
+  .fg input, .fg select { font-size:1rem; padding:0.5rem 0.6rem; }
+  .calc-btn { font-size:0.65rem; padding:0.75rem; }
+  .loc-item { padding:0.55rem 0.7rem; font-size:0.9rem; }
+
+  /* ── Tooltip: disabled on touch, replaced by mob-planet-info ── */
+  #planet-tooltip { display:none !important; }
+
+  /* ── Suggestion dropdown: full-width z-index fix ── */
+  .loc-suggestions { max-height:220px; }
+  /* ── Hide year nav groups ── */
+  .hide-mob { display:none !important; }
+}
+
+/* ══════════════════════════════════════════
+   SMALL PHONES  ≤374px
+══════════════════════════════════════════ */
+@media (max-width:374px) {
+  .tab-btn { padding:0.38rem 0.5rem; font-size:0.52rem; letter-spacing:0.06em; }
+  .time-display { font-size:0.58rem; }
+  .nav-btn { width:26px; height:26px; font-size:0.62rem; }
+}
 </style>
 </head>
 <body>
 
 <!-- HEADER -->
 <header class="site-header">
-  <div class="logo">COSMOS <small>carta astral • sinastria • trânsitos</small></div>
+  <div style="display:flex;align-items:center;gap:0.65rem">
+    <button class="mob-toggle" id="btn-sidebar" onclick="togglePanel('sidebar')" aria-label="Menu" title="Formulário">☰</button>
+    <div class="logo">COSMOS <small>carta astral • sinastria • trânsitos</small></div>
+  </div>
   <nav class="tab-nav">
     <button class="tab-btn active" onclick="switchTab('live')">Ao Vivo</button>
     <button class="tab-btn" onclick="switchTab('natal')">Natal</button>
     <button class="tab-btn" onclick="switchTab('synastry')">Sinastria</button>
     <button class="tab-btn" onclick="switchTab('transits')">Trânsitos</button>
   </nav>
+  <button class="mob-toggle" id="btn-info" onclick="togglePanel('info')" aria-label="Painel" title="Planetas &amp; Aspectos">☽</button>
 </header>
 
 <!-- TIME NAVIGATOR -->
@@ -260,8 +499,8 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
     <button class="nav-btn" title="−1 mês"    onclick="shiftTime(-1,'m')">◂m</button>
     <button class="nav-btn" title="+1 mês"    onclick="shiftTime(+1,'m')">m▸</button>
   </div>
-  <div class="nav-sep"></div>
-  <div class="nav-group">
+  <div class="nav-sep hide-mob"></div>
+  <div class="nav-group hide-mob">
     <button class="nav-btn" title="−1 ano"    onclick="shiftTime(-1,'y')">◂a</button>
     <button class="nav-btn" title="+1 ano"    onclick="shiftTime(+1,'y')">a▸</button>
   </div>
@@ -270,22 +509,22 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
     —<span>carregando efêmérides…</span>
   </div>
 
-  <div class="nav-group">
+  <div class="nav-group hide-mob time-nav-right">
     <button class="nav-btn" onclick="shiftTime(-1,'y')">a◂</button>
     <button class="nav-btn" onclick="shiftTime(+1,'y')">▸a</button>
   </div>
-  <div class="nav-sep"></div>
-  <div class="nav-group">
+  <div class="nav-sep hide-mob time-nav-right"></div>
+  <div class="nav-group time-nav-right">
     <button class="nav-btn" onclick="shiftTime(-1,'m')">m◂</button>
     <button class="nav-btn" onclick="shiftTime(+1,'m')">▸m</button>
   </div>
-  <div class="nav-sep"></div>
-  <div class="nav-group">
+  <div class="nav-sep time-nav-right"></div>
+  <div class="nav-group time-nav-right">
     <button class="nav-btn" onclick="shiftTime(-1,'d')">d◂</button>
     <button class="nav-btn" onclick="shiftTime(+1,'d')">▸d</button>
   </div>
-  <div class="nav-sep"></div>
-  <div class="nav-group">
+  <div class="nav-sep time-nav-right"></div>
+  <div class="nav-group time-nav-right">
     <button class="nav-btn" onclick="shiftTime(-1,'h')">h◂</button>
     <button class="nav-btn" onclick="shiftTime(+1,'h')">◂h</button>
   </div>
@@ -293,11 +532,14 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
   <button class="now-btn" onclick="goNow()">Agora</button>
 </div>
 
+<!-- Panel overlay (mobile/tablet backdrop) -->
+<div class="panel-overlay" id="panel-overlay" onclick="closeAllPanels()"></div>
+
 <!-- APP -->
 <main class="app">
 
   <!-- SIDEBAR -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
 
     <!-- LIVE TAB -->
     <div id="tab-live" class="tab-content active">
@@ -443,7 +685,7 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
   </div>
 
   <!-- INFO PANEL -->
-  <aside class="info-panel">
+  <aside class="info-panel" id="info-panel">
     <div class="sec">Planetas</div>
     <div id="planet-list"><div class="empty">Carregando…</div></div>
     <div class="sep"></div>
@@ -454,6 +696,40 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
     <div id="aspect-list"><div class="empty"></div></div>
   </aside>
 </main>
+
+<!-- MOBILE: Planet info bottom sheet (tap on planet) -->
+<div id="mob-planet-info">
+  <button id="mob-planet-info-close" onclick="closeMobPlanetInfo()">✕</button>
+  <span class="mob-pi-handle"></span>
+  <div class="mob-pi-head">
+    <span class="mob-pi-name" id="mob-pi-name"></span>
+    <span class="mob-pi-pos"  id="mob-pi-pos"></span>
+  </div>
+  <div class="mob-pi-house" id="mob-pi-house"></div>
+  <div class="mob-pi-asps"  id="mob-pi-asps"></div>
+</div>
+
+<!-- MOBILE: Bottom navigation bar -->
+<nav class="mob-bar" id="mob-bar">
+  <button class="mob-bar-btn active" id="mbb-live"     onclick="switchTab('live')">
+    <span class="mbb-icon">✦</span>Ao Vivo
+  </button>
+  <button class="mob-bar-btn" id="mbb-natal"    onclick="switchTab('natal')">
+    <span class="mbb-icon">☉</span>Natal
+  </button>
+  <button class="mob-bar-btn" id="mbb-synastry" onclick="switchTab('synastry')">
+    <span class="mbb-icon">♾</span>Sinastria
+  </button>
+  <button class="mob-bar-btn" id="mbb-transits" onclick="switchTab('transits')">
+    <span class="mbb-icon">↻</span>Trânsitos
+  </button>
+  <button class="mob-bar-btn" id="mbb-sidebar"  onclick="togglePanel('sidebar')">
+    <span class="mbb-icon">⊞</span>Dados
+  </button>
+  <button class="mob-bar-btn" id="mbb-info"     onclick="togglePanel('info')">
+    <span class="mbb-icon">☽</span>Painel
+  </button>
+</nav>
 
 <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
 <script type="module">
@@ -1361,6 +1637,111 @@ function showStatus(msg) {
   clearTimeout(stTimer);
   stTimer = setTimeout(() => b.classList.remove('show'), 2800);
 }
+
+// ── Mobile / Tablet panel management ─────────────────────────────────────────
+window.togglePanel = function(which) {
+  const sidebar   = document.getElementById('sidebar');
+  const infoPanel = document.getElementById('info-panel');
+  const overlay   = document.getElementById('panel-overlay');
+
+  if (which === 'sidebar') {
+    const isOpen = sidebar.classList.contains('open');
+    infoPanel.classList.remove('open');
+    sidebar.classList.toggle('open', !isOpen);
+    overlay.classList.toggle('visible', !isOpen);
+  } else {
+    const isOpen = infoPanel.classList.contains('open');
+    sidebar.classList.remove('open');
+    infoPanel.classList.toggle('open', !isOpen);
+    overlay.classList.toggle('visible', !isOpen);
+  }
+};
+
+window.closeAllPanels = function() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('info-panel').classList.remove('open');
+  document.getElementById('panel-overlay').classList.remove('visible');
+};
+
+// ── Override switchTab to also sync mobile bottom bar ─────────────────────────
+const _origSwitchTab = window.switchTab;
+window.switchTab = function(tab) {
+  _origSwitchTab(tab);
+  // Sync mob-bar active state
+  ['live','natal','synastry','transits'].forEach(t => {
+    const btn = document.getElementById('mbb-' + t);
+    if (btn) btn.classList.toggle('active', t === tab);
+  });
+  // On mobile, open sidebar after tab switch so form is immediately accessible
+  if (window.innerWidth <= 767) {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('panel-overlay');
+    sidebar.classList.add('open');
+    overlay.classList.add('visible');
+  }
+};
+
+// ── Mobile planet tap info sheet ──────────────────────────────────────────────
+window.openMobPlanetInfo = function(planet, houses, aspects) {
+  if (window.innerWidth > 767) return; // desktop: use tooltip instead
+  const sheet = document.getElementById('mob-planet-info');
+  const nameEl = document.getElementById('mob-pi-name');
+  const posEl  = document.getElementById('mob-pi-pos');
+  const houseEl= document.getElementById('mob-pi-house');
+  const aspsEl = document.getElementById('mob-pi-asps');
+
+  nameEl.textContent = planet.name + (planet.retro && planet.id > 1 ? ' ℞' : '');
+  nameEl.style.color = planet.color;
+  posEl.textContent  = fmtShort(planet.lon);
+  const house = houses ? getPlanetHouse(planet.lon, houses.cusps) : null;
+  houseEl.textContent = house ? `Casa ${house}` : '';
+
+  const related = aspects.filter(a => a.p1.name === planet.name || a.p2.name === planet.name);
+  aspsEl.innerHTML = related.slice(0, 8).map(a => {
+    const other = a.p1.name === planet.name ? a.p2 : a.p1;
+    return `<span class="mob-asp-chip" style="border-color:${a.type.color}33;color:${a.type.color}">` +
+      `<span style="color:${other.color}">${other.glyph}</span> ${a.type.name.substring(0,6)} ${a.orb}°</span>`;
+  }).join('');
+
+  sheet.classList.add('open');
+
+  // Also highlight aspects in SVG
+  if (ctrlState.tooltip) {
+    const svg = document.getElementById('chart-svg');
+    svg.querySelectorAll('.asp-line').forEach(line => {
+      const [n1, n2] = (line.dataset.asp || '').split('|');
+      const rel = n1 === planet.name || n2 === planet.name;
+      line.setAttribute('opacity', rel ? '0.9' : '0.08');
+      if (rel) line.setAttribute('stroke-width', 1.2);
+    });
+  }
+  if (ctrlState.highlight) highlightPanelForPlanet(planet.name);
+};
+
+window.closeMobPlanetInfo = function() {
+  document.getElementById('mob-planet-info').classList.remove('open');
+  onPlanetLeave('__none__');
+};
+
+// ── SVG touch support: tap on planet opens mob info sheet ────────────────────
+// Inject touch handler into drawPlanetSymbols hit circles
+// This is handled by passing openMobPlanetInfo into the existing hover flow:
+// onPlanetHover already calls openMobPlanetInfo when on mobile.
+// We patch the hit element's touchstart event in drawPlanetSymbols above,
+// but since that function already exists we add a global touchstart listener
+// on the SVG to catch taps on planet hit areas.
+document.getElementById('chart-svg').addEventListener('touchstart', function(e) {
+  const touch = e.changedTouches[0];
+  const el = document.elementFromPoint(touch.clientX, touch.clientY);
+  if (el && el.dataset.planetName && _lastRender) {
+    e.preventDefault();
+    const [planets, houses, aspects] = _lastRender;
+    const allPlanets = planets.concat(_lastRender[4] || []);
+    const planet = allPlanets.find(p => p.name === el.dataset.planetName);
+    if (planet) openMobPlanetInfo(planet, houses, aspects);
+  }
+}, { passive: false });
+
 </script>
 </body>
 </html>

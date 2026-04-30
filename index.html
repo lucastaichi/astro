@@ -272,36 +272,7 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
 #planet-tooltip .tt-asp  { margin-top:0.35rem; padding-top:0.35rem; border-top:1px solid rgba(201,168,76,0.15); }
 #planet-tooltip .tt-asp-row { font-size:0.72rem; color:var(--text-faint); line-height:1.55; }
 
-/* ── Mobile planet info panel (tap-triggered, bottom sheet) ── */
-#mob-planet-info {
-  display:none; position:fixed; bottom:0; left:0; right:0; z-index:300;
-  background:#0f0d09; border-top:1px solid rgba(201,168,76,0.35);
-  border-radius:14px 14px 0 0; padding:1rem 1.2rem 1.4rem;
-  box-shadow:0 -8px 32px rgba(0,0,0,0.6);
-  transform:translateY(100%); transition:transform 0.28s cubic-bezier(.4,0,.2,1);
-}
-#mob-planet-info.open { display:block; transform:translateY(0); }
-#mob-planet-info .mob-pi-handle {
-  width:36px; height:3px; background:rgba(201,168,76,0.3); border-radius:2px;
-  margin:0 auto 0.8rem; display:block;
-}
-#mob-planet-info .mob-pi-head {
-  display:flex; align-items:baseline; gap:0.6rem; margin-bottom:0.4rem;
-}
-#mob-planet-info .mob-pi-name { font-family:'Cinzel',serif; font-size:0.9rem; letter-spacing:0.12em; }
-#mob-planet-info .mob-pi-pos  { font-size:0.95rem; color:var(--gold-pale); }
-#mob-planet-info .mob-pi-house { font-size:0.75rem; color:var(--text-faint); font-style:italic; }
-#mob-planet-info .mob-pi-asps { margin-top:0.55rem; display:flex; flex-wrap:wrap; gap:0.4rem; }
-#mob-planet-info .mob-asp-chip {
-  font-size:0.72rem; padding:0.18rem 0.5rem; border-radius:20px;
-  background:rgba(201,168,76,0.08); border:1px solid rgba(201,168,76,0.2);
-  color:var(--gold-pale); white-space:nowrap;
-}
-#mob-planet-info-close {
-  position:absolute; top:0.75rem; right:1rem;
-  background:transparent; border:none; color:var(--text-faint);
-  font-size:1.1rem; cursor:pointer; padding:0.2rem;
-}
+/* ── Mobile planet info panel styles moved to #mob-planet-tooltip above ── */
 
 /* ══════════════════════════════════════════
    HIGHLIGHT STATES
@@ -311,158 +282,262 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
 .planet-row.highlighted { background:rgba(201,168,76,0.08); border-radius:3px; }
 
 /* ══════════════════════════════════════════
-   MOBILE BOTTOM NAV BAR
+   MOBILE BOTTOM NAV BAR  (hidden on desktop)
 ══════════════════════════════════════════ */
 .mob-bar {
-  display:none; position:fixed; bottom:0; left:0; right:0; z-index:30;
+  display:none; position:fixed; bottom:0; left:0; right:0; z-index:60;
   background:#0a0806; border-top:1px solid var(--line);
-  height:54px; align-items:stretch;
+  height:56px; align-items:stretch; flex-shrink:0;
 }
 .mob-bar-btn {
   flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
   background:transparent; border:none; color:var(--text-faint);
-  font-family:'Cinzel',serif; font-size:0.42rem; letter-spacing:0.1em;
+  font-family:'Cinzel',serif; font-size:0.4rem; letter-spacing:0.08em;
   text-transform:uppercase; cursor:pointer; gap:3px;
-  border-right:1px solid var(--line); transition:all 0.15s;
-  padding:0 0.2rem;
+  border-right:1px solid var(--line); transition:color 0.15s, background 0.15s;
+  padding:0 0.15rem; overflow:hidden; -webkit-tap-highlight-color:transparent;
 }
 .mob-bar-btn:last-child { border-right:none; }
-.mob-bar-btn .mbb-icon { font-size:1.1rem; line-height:1; }
-.mob-bar-btn.active,.mob-bar-btn:active { color:var(--gold); background:rgba(201,168,76,0.06); }
+.mob-bar-btn .mbb-icon { font-size:1.05rem; line-height:1; flex-shrink:0; }
+.mob-bar-btn .mbb-label { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%; text-align:center; }
+.mob-bar-btn.active { color:var(--gold); background:rgba(201,168,76,0.07); }
+.mob-bar-btn:active  { color:var(--gold); background:rgba(201,168,76,0.12); }
+
+/* ── Settings tray (Opção A — popover above mob-bar) ── */
+/* ── Settings tray (above mob-bar) — mobile only ── */
+#mob-settings-tray {
+  display:none; /* shown only on mobile via media query + .open */
+  position:fixed; left:0; right:0; z-index:59;
+  background:#0f0d09; border-top:1px solid var(--line-s);
+  padding:0.65rem 1rem; flex-direction:row; justify-content:space-around; align-items:center;
+  gap:0.5rem; box-shadow:0 -4px 16px rgba(0,0,0,0.5);
+}
+.tray-ctrl {
+  display:flex; flex-direction:column; align-items:center; gap:0.25rem;
+  font-family:'Cinzel',serif; font-size:0.48rem; letter-spacing:0.1em;
+  text-transform:uppercase; color:var(--text-faint); cursor:pointer;
+  padding:0.4rem 0.8rem; border-radius:6px; border:1px solid rgba(201,168,76,0.18);
+  background:transparent; transition:all 0.15s; -webkit-tap-highlight-color:transparent;
+  flex:1;
+}
+.tray-ctrl .tray-icon { font-size:1rem; }
+.tray-ctrl.on { color:var(--gold); border-color:rgba(201,168,76,0.5); background:rgba(201,168,76,0.08); }
+.tray-ctrl.on .ctrl-dot { background:var(--gold); }
+
+/* ── Bottom sheet base — mobile only, hidden globally ── */
+.mob-sheet {
+  display:none; /* flex only inside @media mobile */
+  position:fixed; left:0; right:0; z-index:55;
+  background:#0f0d09; border-radius:16px 16px 0 0;
+  border-top:1px solid rgba(201,168,76,0.3);
+  box-shadow:0 -8px 32px rgba(0,0,0,0.65);
+  flex-direction:column;
+  max-height:82vh;
+}
+/* On mobile (set by media query below) sheets become flex + slide in/out */
+.mob-sheet-handle {
+  width:40px; height:4px; background:rgba(201,168,76,0.28); border-radius:2px;
+  margin:0.7rem auto 0; flex-shrink:0;
+}
+.mob-sheet-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0.55rem 1rem 0.4rem; flex-shrink:0;
+  border-bottom:1px solid var(--line);
+}
+.mob-sheet-title {
+  font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.2em;
+  text-transform:uppercase; color:var(--gold);
+}
+.mob-sheet-close {
+  background:transparent; border:none; color:var(--text-faint);
+  font-size:1.1rem; cursor:pointer; padding:0.2rem 0.4rem; line-height:1;
+  -webkit-tap-highlight-color:transparent;
+}
+.mob-sheet-body {
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+  padding:0.9rem 1rem 1rem; flex:1;
+}
+
+/* ── Mobile planet tap tooltip — hidden globally, shown on mobile only ── */
+#mob-planet-tooltip {
+  display:none; /* shown via JS on mobile only */
+  position:fixed; z-index:70; pointer-events:auto;
+  background:rgba(10,8,5,0.97); border:1px solid rgba(201,168,76,0.4);
+  border-radius:10px; padding:0.7rem 0.9rem; min-width:180px; max-width:260px;
+  box-shadow:0 6px 24px rgba(0,0,0,0.7); backdrop-filter:blur(8px);
+}
+#mob-planet-tooltip .mpt-name  { font-family:'Cinzel',serif; font-size:0.75rem; letter-spacing:0.12em; margin-bottom:0.3rem; }
+#mob-planet-tooltip .mpt-pos   { font-size:0.88rem; color:var(--gold-pale); margin-bottom:0.12rem; }
+#mob-planet-tooltip .mpt-house { font-size:0.72rem; color:var(--text-faint); font-style:italic; }
+#mob-planet-tooltip .mpt-asps  { margin-top:0.4rem; padding-top:0.4rem; border-top:1px solid rgba(201,168,76,0.15); display:flex; flex-direction:column; gap:0.18rem; }
+#mob-planet-tooltip .mpt-asp-row { font-size:0.72rem; color:var(--text-faint); line-height:1.5; }
+#mob-planet-tooltip-close {
+  position:absolute; top:0.4rem; right:0.55rem;
+  background:transparent; border:none; color:var(--text-faint);
+  font-size:0.95rem; cursor:pointer; padding:0.15rem;
+  -webkit-tap-highlight-color:transparent;
+}
+
+/* ── SVG zoom wrapper — neutral on desktop, touch-enabled on mobile ── */
+#chart-zoom-wrap {
+  width:100%; height:100%; position:relative;
+  /* touch-action and cursor set only on mobile via media query */
+}
+
+/* ── Zoom reset button — hidden everywhere, shown on mobile via JS ── */
+#btn-zoom-reset {
+  display:none;
+  position:absolute; top:0.6rem; right:0.6rem; z-index:8;
+  background:rgba(13,11,8,0.88); border:1px solid rgba(201,168,76,0.35);
+  color:var(--gold-pale); font-family:'Cinzel',serif; font-size:0.5rem;
+  letter-spacing:0.1em; text-transform:uppercase; padding:0.3rem 0.65rem;
+  border-radius:20px; cursor:pointer; backdrop-filter:blur(4px);
+  -webkit-tap-highlight-color:transparent;
+}
 
 /* ══════════════════════════════════════════
    TABLET  768–1023px
 ══════════════════════════════════════════ */
 @media (max-width:1023px) {
-  :root { --sidebar-w:280px; --info-w:260px; }
-
-  /* Header shrinks logo subtitle */
+  :root { --sidebar-w:300px; --info-w:270px; }
   .logo small { display:none; }
+  .tab-btn { padding:0.42rem 0.7rem; font-size:0.58rem; letter-spacing:0.1em; }
 
-  /* Tab nav labels shorten */
-  .tab-btn { padding:0.42rem 0.65rem; font-size:0.58rem; letter-spacing:0.1em; }
-
-  /* Show sidebar/info toggle buttons */
-  .mob-toggle { display:flex; }
-
-  /* Sidebar becomes a left drawer */
+  /* Sidebar: left drawer */
   .sidebar {
     position:absolute; top:0; left:0; bottom:0;
     transform:translateX(-100%);
     box-shadow:4px 0 24px rgba(0,0,0,0.5);
+    z-index:25;
   }
   .sidebar.open { transform:translateX(0); }
 
-  /* Info panel becomes a right drawer */
+  /* Info panel: right drawer */
   .info-panel {
     position:absolute; top:0; right:0; bottom:0;
     transform:translateX(100%);
     box-shadow:-4px 0 24px rgba(0,0,0,0.5);
+    z-index:25;
   }
   .info-panel.open { transform:translateX(0); }
 
-  /* Chart fills whole space */
-  .app { overflow:hidden; }
+  /* Overlay sits between chart and drawers */
+  .panel-overlay { z-index:24; }
 
-  /* Time nav: allow horizontal scroll, hide right duplicate groups */
+  /* Right-side duplicate nav groups hidden on tablet */
   .time-nav-right { display:none; }
-  .hide-mob { display:none !important; }
+  .hide-mob       { display:none !important; }
 
-  /* Status bar higher so it clears bottom controls */
   .status-bar { bottom:4.5rem; }
 }
 
 /* ══════════════════════════════════════════
-   MOBILE  ≤767px
+   MOBILE  ≤767px  — full redesign
 ══════════════════════════════════════════ */
 @media (max-width:767px) {
-  :root {
-    --header-h: 48px;
-    --timenav-h: 38px;
-  }
+  :root { --header-h:48px; --timenav-h:38px; --mob-bar-h:56px; }
 
   body { overflow:hidden; }
 
-  /* ── Header ── */
-  .site-header { padding:0 0.75rem; }
-  .logo { font-size:0.9rem; letter-spacing:0.12em; }
-  .tab-nav { display:none; }          /* replaced by bottom bar */
+  /* ── Header: hide desktop tab-nav, keep logo + time ── */
+  .site-header { padding:0 0.8rem; }
+  .logo { font-size:0.88rem; letter-spacing:0.1em; }
+  .logo small { display:none; }
+  .tab-nav { display:none; }
 
-  /* ── Time nav: compact single row ── */
-  .time-nav { height:var(--timenav-h); padding:0 0.5rem; justify-content:space-between; overflow-x:auto; }
-  .time-display { font-size:0.65rem; min-width:0; padding:0 0.6rem; letter-spacing:0.04em; }
-  .time-display span { font-size:0.55rem; }
-  .nav-sep { margin:0 0.3rem; }
-  /* Hide year nav on mobile — available via long-press feel through the +/- d/m */
-  .nav-group.hide-mob { display:none; }
+  /* ── Time nav: scrollable, no justify-content:space-between conflict ── */
+  .time-nav {
+    height:var(--timenav-h); padding:0 0.4rem;
+    justify-content:flex-start; overflow-x:auto;
+    gap:0; scrollbar-width:none;
+  }
+  .time-nav::-webkit-scrollbar { display:none; }
+  /* Remove conflicting justify, let items flow naturally with scroll */
+  .time-display { font-size:0.62rem; min-width:140px; padding:0 0.6rem; letter-spacing:0.03em; flex-shrink:0; }
+  .time-display span { font-size:0.52rem; }
+  .nav-btn { width:28px; height:28px; font-size:0.65rem; }
+  .nav-sep { margin:0 0.25rem; }
+  .now-btn { font-size:0.5rem; padding:0.25rem 0.6rem; margin-left:0.4rem; }
 
-  /* ── App layout: chart takes full screen ── */
+  /* Hide duplicate right-side groups AND year groups on mobile */
+  .time-nav-right { display:none !important; }
+  .hide-mob       { display:none !important; }
+
+  /* ── App: fills space between timenav and mob-bar ── */
   .app {
-    height:calc(100vh - var(--header-h) - var(--timenav-h) - 54px); /* 54px = mob-bar */
+    height:calc(100vh - var(--header-h) - var(--timenav-h) - var(--mob-bar-h));
+    min-height:260px;
   }
 
-  /* ── Sidebar: full-screen left sheet ── */
-  .sidebar {
-    position:fixed; top:var(--header-h); left:0;
-    bottom:54px; width:min(320px, 88vw);
-    transform:translateX(-100%);
-    z-index:50; box-shadow:6px 0 32px rgba(0,0,0,0.65);
-  }
-  .sidebar.open { transform:translateX(0); }
+  /* ── Desktop sidebar/info: hidden on mobile (replaced by mob-sheets) ── */
+  .sidebar, .info-panel { display:none !important; }
 
-  /* ── Info panel: bottom sheet ── */
-  .info-panel {
-    position:fixed; bottom:54px; left:0; right:0;
-    width:100%; height:var(--sheet-h);
-    min-width:unset; border-left:none;
-    border-top:1px solid var(--line);
-    border-radius:14px 14px 0 0;
-    transform:translateY(100%);
-    z-index:50; box-shadow:0 -6px 32px rgba(0,0,0,0.6);
-  }
-  .info-panel.open { transform:translateY(0); }
+  /* ── Chart area: full width, no min-width constraint ── */
+  .chart-area { min-width:0; }
 
-  /* drag handle for info panel */
-  .info-panel::before {
-    content:''; display:block; width:36px; height:3px;
-    background:rgba(201,168,76,0.3); border-radius:2px;
-    margin:0.6rem auto 0.8rem;
-  }
+  /* ── Chart controls: hidden on mobile (moved to settings tray) ── */
+  .chart-controls { display:none; }
 
-  /* ── Chart controls: smaller, higher ── */
-  .chart-controls { bottom:1rem; }
-  .ctrl-btn { padding:0.28rem 0.55rem; font-size:0.48rem; }
-
-  /* ── Status bar ── */
-  .status-bar { bottom:5rem; font-size:0.68rem; }
-
-  /* ── Bottom nav bar: visible ── */
-  .mob-bar { display:flex; }
-
-  /* ── Toggle buttons ── */
-  .mob-toggle { display:flex; }
-
-  /* ── Touch targets: bigger inputs ── */
-  .fg input, .fg select { font-size:1rem; padding:0.5rem 0.6rem; }
-  .calc-btn { font-size:0.65rem; padding:0.75rem; }
-  .loc-item { padding:0.55rem 0.7rem; font-size:0.9rem; }
-
-  /* ── Tooltip: disabled on touch, replaced by mob-planet-info ── */
+  /* ── Desktop tooltip: never show on mobile ── */
   #planet-tooltip { display:none !important; }
 
-  /* ── Suggestion dropdown: full-width z-index fix ── */
-  .loc-suggestions { max-height:220px; }
-  /* ── Hide year nav groups ── */
-  .hide-mob { display:none !important; }
+  /* ── Status bar: above mob-bar ── */
+  .status-bar { bottom:calc(var(--mob-bar-h) + 0.6rem); font-size:0.68rem; }
+
+  /* ── Bottom bar: visible ── */
+  .mob-bar { display:flex; }
+
+  /* ── Panel overlay: covers chart area only (above timenav, below mob-bar) ── */
+  .panel-overlay {
+    top:calc(var(--header-h) + var(--timenav-h));
+    bottom:var(--mob-bar-h);
+    z-index:54;
+  }
+
+  /* ── Touch targets ── */
+  .fg input, .fg select { font-size:1rem; padding:0.5rem 0.6rem; min-height:44px; }
+  .calc-btn { font-size:0.62rem; padding:0.75rem; min-height:44px; }
+  .loc-item { padding:0.55rem 0.7rem; font-size:0.9rem; min-height:44px; display:flex; align-items:center; flex-wrap:wrap; }
+  .loc-suggestions { max-height:200px; }
+
+  /* ── Activate mob-sheets on mobile ── */
+  .mob-sheet {
+    display:flex; /* now a flex column, out of view by default via transform */
+    bottom:var(--mob-bar-h);
+    transform:translateY(110%);
+    transition:transform 0.3s cubic-bezier(.4,0,.2,1);
+  }
+  .mob-sheet.open { transform:translateY(0); }
+
+  /* ── Settings tray: position and activate on mobile ── */
+  #mob-settings-tray {
+    bottom:var(--mob-bar-h);
+  }
+  #mob-settings-tray.open { display:flex; }
+
+  /* ── Mobile planet tooltip: shown via JS ── */
+  #mob-planet-tooltip.visible { display:block; }
+
+  /* ── Zoom wrap: enable touch gestures only on mobile ── */
+  #chart-zoom-wrap {
+    touch-action:none;
+    cursor:grab;
+  }
+  #chart-zoom-wrap:active { cursor:grabbing; }
+
+  /* ── Zoom reset button ── */
+  #btn-zoom-reset.visible { display:block; }
 }
 
 /* ══════════════════════════════════════════
    SMALL PHONES  ≤374px
 ══════════════════════════════════════════ */
 @media (max-width:374px) {
-  .tab-btn { padding:0.38rem 0.5rem; font-size:0.52rem; letter-spacing:0.06em; }
-  .time-display { font-size:0.58rem; }
-  .nav-btn { width:26px; height:26px; font-size:0.62rem; }
+  .time-display { font-size:0.56rem; min-width:110px; }
+  .nav-btn { width:24px; height:24px; font-size:0.58rem; }
+  .mob-bar-btn .mbb-label { display:none; }
+  .mob-bar-btn { justify-content:center; }
+  .mob-bar-btn .mbb-icon { font-size:1.15rem; }
 }
 </style>
 </head>
@@ -470,17 +545,13 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
 
 <!-- HEADER -->
 <header class="site-header">
-  <div style="display:flex;align-items:center;gap:0.65rem">
-    <button class="mob-toggle" id="btn-sidebar" onclick="togglePanel('sidebar')" aria-label="Menu" title="Formulário">☰</button>
-    <div class="logo">COSMOS <small>carta astral • sinastria • trânsitos</small></div>
-  </div>
+  <div class="logo">COSMOS <small>carta astral • sinastria • trânsitos</small></div>
   <nav class="tab-nav">
     <button class="tab-btn active" onclick="switchTab('live')">Ao Vivo</button>
     <button class="tab-btn" onclick="switchTab('natal')">Natal</button>
     <button class="tab-btn" onclick="switchTab('synastry')">Sinastria</button>
     <button class="tab-btn" onclick="switchTab('transits')">Trânsitos</button>
   </nav>
-  <button class="mob-toggle" id="btn-info" onclick="togglePanel('info')" aria-label="Painel" title="Planetas &amp; Aspectos">☽</button>
 </header>
 
 <!-- TIME NAVIGATOR -->
@@ -663,7 +734,9 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
       <div class="loading-spinner"></div>
       <div class="loading-text">Carregando efêmérides</div>
     </div>
-    <svg id="chart-svg" viewBox="-300 -300 600 600" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%"></svg>
+    <div id="chart-zoom-wrap">
+      <svg id="chart-svg" viewBox="-300 -300 600 600" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%"></svg>
+    </div>
     <div class="status-bar" id="status-bar"></div>
     <div class="chart-controls">
       <button class="ctrl-btn" id="ctrl-degrees" onclick="toggleCtrl('degrees')" title="Graus no disco">
@@ -676,6 +749,7 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
         <span class="ctrl-dot"></span>Destaque
       </button>
     </div>
+    <button id="btn-zoom-reset" onclick="resetZoom()">⟲ Resetar zoom</button>
   </section>
   <div id="planet-tooltip">
     <div class="tt-name" id="tt-name"></div>
@@ -697,37 +771,83 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
   </aside>
 </main>
 
-<!-- MOBILE: Planet info bottom sheet (tap on planet) -->
-<div id="mob-planet-info">
-  <button id="mob-planet-info-close" onclick="closeMobPlanetInfo()">✕</button>
-  <span class="mob-pi-handle"></span>
-  <div class="mob-pi-head">
-    <span class="mob-pi-name" id="mob-pi-name"></span>
-    <span class="mob-pi-pos"  id="mob-pi-pos"></span>
-  </div>
-  <div class="mob-pi-house" id="mob-pi-house"></div>
-  <div class="mob-pi-asps"  id="mob-pi-asps"></div>
+<!-- ══ MOBILE ELEMENTS (hidden on desktop) ══════════════════════════════════ -->
+
+<!-- Overlay backdrop -->
+<div class="panel-overlay" id="panel-overlay" onclick="closeMobSheets()"></div>
+
+<!-- Mobile planet tooltip (tap-triggered, positioned near planet) -->
+<div id="mob-planet-tooltip">
+  <button id="mob-planet-tooltip-close" onclick="closeMobPlanetTooltip()">✕</button>
+  <div class="mpt-name" id="mpt-name"></div>
+  <div class="mpt-pos"  id="mpt-pos"></div>
+  <div class="mpt-house" id="mpt-house"></div>
+  <div class="mpt-asps"  id="mpt-asps"></div>
 </div>
 
-<!-- MOBILE: Bottom navigation bar -->
+<!-- Settings tray (above mob-bar) -->
+<div id="mob-settings-tray">
+  <button class="tray-ctrl" id="tray-degrees"   onclick="toggleCtrl('degrees')">
+    <span class="tray-icon">°</span><span class="mbb-label">Graus</span>
+  </button>
+  <button class="tray-ctrl on" id="tray-tooltip"   onclick="toggleCtrl('tooltip')">
+    <span class="tray-icon">☉</span><span class="mbb-label">Info</span>
+  </button>
+  <button class="tray-ctrl on" id="tray-highlight" onclick="toggleCtrl('highlight')">
+    <span class="tray-icon">✦</span><span class="mbb-label">Destaque</span>
+  </button>
+</div>
+
+<!-- Form sheet (bottom sheet for data entry) -->
+<div class="mob-sheet" id="mob-form-sheet">
+  <div class="mob-sheet-handle"></div>
+  <div class="mob-sheet-header">
+    <span class="mob-sheet-title" id="mob-form-title">Céu ao Vivo</span>
+    <button class="mob-sheet-close" onclick="closeMobSheet('form')">✕</button>
+  </div>
+  <div class="mob-sheet-body" id="mob-form-body">
+    <!-- Content injected by JS based on active tab -->
+  </div>
+</div>
+
+<!-- Info sheet (bottom sheet for tables) -->
+<div class="mob-sheet" id="mob-info-sheet">
+  <div class="mob-sheet-handle"></div>
+  <div class="mob-sheet-header">
+    <span class="mob-sheet-title">Dados do Mapa</span>
+    <button class="mob-sheet-close" onclick="closeMobSheet('info')">✕</button>
+  </div>
+  <div class="mob-sheet-body">
+    <div class="sec">Planetas</div>
+    <div id="mob-planet-list"></div>
+    <div class="sep"></div>
+    <div class="sec">Casas</div>
+    <div id="mob-house-list"></div>
+    <div class="sep"></div>
+    <div class="sec">Aspectos</div>
+    <div id="mob-aspect-list"></div>
+  </div>
+</div>
+
+<!-- Bottom navigation bar -->
 <nav class="mob-bar" id="mob-bar">
-  <button class="mob-bar-btn active" id="mbb-live"     onclick="switchTab('live')">
-    <span class="mbb-icon">✦</span>Ao Vivo
+  <button class="mob-bar-btn active" id="mbb-live"     onclick="mobSwitchTab('live')">
+    <span class="mbb-icon">✦</span><span class="mbb-label">Ao Vivo</span>
   </button>
-  <button class="mob-bar-btn" id="mbb-natal"    onclick="switchTab('natal')">
-    <span class="mbb-icon">☉</span>Natal
+  <button class="mob-bar-btn" id="mbb-natal"    onclick="mobSwitchTab('natal')">
+    <span class="mbb-icon">☉</span><span class="mbb-label">Natal</span>
   </button>
-  <button class="mob-bar-btn" id="mbb-synastry" onclick="switchTab('synastry')">
-    <span class="mbb-icon">♾</span>Sinastria
+  <button class="mob-bar-btn" id="mbb-synastry" onclick="mobSwitchTab('synastry')">
+    <span class="mbb-icon">♾</span><span class="mbb-label">Sinastria</span>
   </button>
-  <button class="mob-bar-btn" id="mbb-transits" onclick="switchTab('transits')">
-    <span class="mbb-icon">↻</span>Trânsitos
+  <button class="mob-bar-btn" id="mbb-transits" onclick="mobSwitchTab('transits')">
+    <span class="mbb-icon">↻</span><span class="mbb-label">Trânsitos</span>
   </button>
-  <button class="mob-bar-btn" id="mbb-sidebar"  onclick="togglePanel('sidebar')">
-    <span class="mbb-icon">⊞</span>Dados
+  <button class="mob-bar-btn" id="mbb-tables"   onclick="openMobInfoSheet()">
+    <span class="mbb-icon">☽</span><span class="mbb-label">Tabelas</span>
   </button>
-  <button class="mob-bar-btn" id="mbb-info"     onclick="togglePanel('info')">
-    <span class="mbb-icon">☽</span>Painel
+  <button class="mob-bar-btn" id="mbb-settings" onclick="toggleSettingsTray()">
+    <span class="mbb-icon">⚙</span><span class="mbb-label">Opções</span>
   </button>
 </nav>
 
@@ -1638,77 +1758,220 @@ function showStatus(msg) {
   stTimer = setTimeout(() => b.classList.remove('show'), 2800);
 }
 
-// ── Mobile / Tablet panel management ─────────────────────────────────────────
-window.togglePanel = function(which) {
-  const sidebar   = document.getElementById('sidebar');
-  const infoPanel = document.getElementById('info-panel');
-  const overlay   = document.getElementById('panel-overlay');
+// ═══════════════════════════════════════════════════════════════════════════════
+// MOBILE UI
+// Only runs on ≤767px. Desktop layout is untouched.
+// ═══════════════════════════════════════════════════════════════════════════════
 
-  if (which === 'sidebar') {
-    const isOpen = sidebar.classList.contains('open');
-    infoPanel.classList.remove('open');
-    sidebar.classList.toggle('open', !isOpen);
-    overlay.classList.toggle('visible', !isOpen);
-  } else {
-    const isOpen = infoPanel.classList.contains('open');
-    sidebar.classList.remove('open');
-    infoPanel.classList.toggle('open', !isOpen);
-    overlay.classList.toggle('visible', !isOpen);
-  }
-};
+function isMobile() { return window.innerWidth <= 767; }
 
-window.closeAllPanels = function() {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('info-panel').classList.remove('open');
-  document.getElementById('panel-overlay').classList.remove('visible');
-};
+// ── Tab switching: desktop uses original switchTab, mobile uses mobSwitchTab ──
+// switchTab is defined above (desktop). We leave it intact.
+// On mobile the bottom bar calls mobSwitchTab which handles both logics.
 
-// ── Override switchTab to also sync mobile bottom bar ─────────────────────────
-const _origSwitchTab = window.switchTab;
-window.switchTab = function(tab) {
-  _origSwitchTab(tab);
-  // Sync mob-bar active state
+window.mobSwitchTab = function(tab) {
+  // Always run the desktop switch (updates chart, forms, panel content)
+  switchTab(tab);
+
+  if (!isMobile()) return;
+
+  // Sync bottom bar active state
   ['live','natal','synastry','transits'].forEach(t => {
     const btn = document.getElementById('mbb-' + t);
     if (btn) btn.classList.toggle('active', t === tab);
   });
-  // On mobile, open sidebar after tab switch so form is immediately accessible
-  if (window.innerWidth <= 767) {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('panel-overlay');
-    sidebar.classList.add('open');
-    overlay.classList.add('visible');
+
+  // If switching to a mode that needs input (natal/synastry/transits),
+  // open the form sheet. For live, just show the chart.
+  if (tab === 'live') {
+    closeMobSheets();
+    showStatus('Céu ao Vivo ✦');
+  } else {
+    openMobFormSheet(tab);
   }
 };
 
-// ── Mobile planet tap info sheet ──────────────────────────────────────────────
-window.openMobPlanetInfo = function(planet, houses, aspects) {
-  if (window.innerWidth > 767) return; // desktop: use tooltip instead
-  const sheet = document.getElementById('mob-planet-info');
-  const nameEl = document.getElementById('mob-pi-name');
-  const posEl  = document.getElementById('mob-pi-pos');
-  const houseEl= document.getElementById('mob-pi-house');
-  const aspsEl = document.getElementById('mob-pi-asps');
+// ── Form sheet ────────────────────────────────────────────────────────────────
+const MOB_FORM_TITLES = {
+  live: 'Céu ao Vivo', natal: 'Mapa Natal',
+  synastry: 'Sinastria', transits: 'Trânsitos'
+};
 
-  nameEl.textContent = planet.name + (planet.retro && planet.id > 1 ? ' ℞' : '');
-  nameEl.style.color = planet.color;
-  posEl.textContent  = fmtShort(planet.lon);
+// Map tab names to their sidebar form IDs (already defined in the desktop sidebar)
+const FORM_TAB_IDS = {
+  live:      'tab-live',
+  natal:     'tab-natal',
+  synastry:  'tab-synastry',
+  transits:  'tab-transits'
+};
+
+window.openMobFormSheet = function(tab) {
+  if (!isMobile()) return;
+
+  const sheet = document.getElementById('mob-form-sheet');
+  const title = document.getElementById('mob-form-title');
+  const body  = document.getElementById('mob-form-body');
+
+  title.textContent = MOB_FORM_TITLES[tab] || tab;
+
+  // Clone the desktop form content into the sheet body
+  const sourceTab = document.getElementById(FORM_TAB_IDS[tab]);
+  if (sourceTab) {
+    body.innerHTML = sourceTab.innerHTML;
+    // Re-bind oninput for location search fields (they use inline oninput)
+    // The cloned HTML retains oninput attributes so they work as-is.
+  }
+
+  // Close info sheet if open
+  document.getElementById('mob-info-sheet').classList.remove('open');
+  document.getElementById('mob-settings-tray').classList.remove('open');
+  sheet.classList.add('open');
+  document.getElementById('panel-overlay').classList.add('visible');
+};
+
+window.closeMobSheet = function(which) {
+  if (which === 'form') {
+    document.getElementById('mob-form-sheet').classList.remove('open');
+  } else {
+    document.getElementById('mob-info-sheet').classList.remove('open');
+  }
+  // Hide overlay if both sheets closed
+  const formOpen = document.getElementById('mob-form-sheet').classList.contains('open');
+  const infoOpen = document.getElementById('mob-info-sheet').classList.contains('open');
+  if (!formOpen && !infoOpen) {
+    document.getElementById('panel-overlay').classList.remove('visible');
+  }
+};
+
+window.closeMobSheets = function() {
+  document.getElementById('mob-form-sheet').classList.remove('open');
+  document.getElementById('mob-info-sheet').classList.remove('open');
+  document.getElementById('mob-settings-tray').classList.remove('open');
+  document.getElementById('panel-overlay').classList.remove('visible');
+};
+
+// ── Info sheet ────────────────────────────────────────────────────────────────
+window.openMobInfoSheet = function() {
+  if (!isMobile()) return;
+
+  // Sync content from desktop panel into mobile lists
+  const syncList = (srcId, dstId) => {
+    const src = document.getElementById(srcId);
+    const dst = document.getElementById(dstId);
+    if (src && dst) dst.innerHTML = src.innerHTML;
+  };
+  syncList('planet-list',  'mob-planet-list');
+  syncList('house-list',   'mob-house-list');
+  syncList('aspect-list',  'mob-aspect-list');
+
+  document.getElementById('mob-form-sheet').classList.remove('open');
+  document.getElementById('mob-settings-tray').classList.remove('open');
+  document.getElementById('mob-info-sheet').classList.add('open');
+  document.getElementById('panel-overlay').classList.add('visible');
+};
+
+// ── Settings tray ─────────────────────────────────────────────────────────────
+window.toggleSettingsTray = function() {
+  const tray = document.getElementById('mob-settings-tray');
+  const isOpen = tray.classList.contains('open');
+  // Close sheets if open
+  document.getElementById('mob-form-sheet').classList.remove('open');
+  document.getElementById('mob-info-sheet').classList.remove('open');
+  document.getElementById('panel-overlay').classList.remove('visible');
+  tray.classList.toggle('open', !isOpen);
+};
+
+// Patch toggleCtrl to also sync tray buttons
+const _origToggleCtrl = window.toggleCtrl;
+window.toggleCtrl = function(key) {
+  _origToggleCtrl(key);
+  // Sync tray button state
+  const trayBtn = document.getElementById('tray-' + key);
+  if (trayBtn) trayBtn.classList.toggle('on', ctrlState[key]);
+};
+
+// ── Calc wrappers: on mobile, close form sheet after calc, sync info ──────────
+function mobAfterCalc() {
+  if (!isMobile()) return;
+  closeMobSheets();
+  // After a short delay let the chart render then sync info sheet content
+  setTimeout(() => {
+    const syncList = (srcId, dstId) => {
+      const src = document.getElementById(srcId);
+      const dst = document.getElementById(dstId);
+      if (src && dst) dst.innerHTML = src.innerHTML;
+    };
+    syncList('planet-list',  'mob-planet-list');
+    syncList('house-list',   'mob-house-list');
+    syncList('aspect-list',  'mob-aspect-list');
+  }, 120);
+}
+
+// Patch the four calc functions to call mobAfterCalc on mobile
+;['calcLive','calcNatal','calcSynastry','calcTransits'].forEach(fn => {
+  const orig = window[fn];
+  window[fn] = function(...args) {
+    const result = orig.apply(this, args);
+    mobAfterCalc();
+    return result;
+  };
+});
+
+// ── Mobile planet tooltip (tap = show, tap outside = hide) ───────────────────
+let _activeMobPlanetName = null;
+
+window.showMobPlanetTooltip = function(planet, houses, aspects, svgBBox) {
+  if (!isMobile()) return;
+  if (!ctrlState.tooltip) return;
+
+  // If same planet tapped again → close
+  if (_activeMobPlanetName === planet.name) {
+    closeMobPlanetTooltip();
+    return;
+  }
+  _activeMobPlanetName = planet.name;
+
+  const tt = document.getElementById('mob-planet-tooltip');
+  document.getElementById('mpt-name').textContent  = planet.name + (planet.retro && planet.id > 1 ? ' ℞' : '');
+  document.getElementById('mpt-name').style.color   = planet.color;
+  document.getElementById('mpt-pos').textContent    = fmtShort(planet.lon);
   const house = houses ? getPlanetHouse(planet.lon, houses.cusps) : null;
-  houseEl.textContent = house ? `Casa ${house}` : '';
+  document.getElementById('mpt-house').textContent  = house ? `Casa ${house}` : '';
 
   const related = aspects.filter(a => a.p1.name === planet.name || a.p2.name === planet.name);
-  aspsEl.innerHTML = related.slice(0, 8).map(a => {
+  document.getElementById('mpt-asps').innerHTML = related.slice(0, 6).map(a => {
     const other = a.p1.name === planet.name ? a.p2 : a.p1;
-    return `<span class="mob-asp-chip" style="border-color:${a.type.color}33;color:${a.type.color}">` +
-      `<span style="color:${other.color}">${other.glyph}</span> ${a.type.name.substring(0,6)} ${a.orb}°</span>`;
+    return `<div class="mpt-asp-row" style="color:${a.type.color}">` +
+      `<span style="color:${other.color}">${other.glyph}</span> ` +
+      `${a.type.name.substring(0,6)} <span style="color:var(--gold-dim)">${a.orb}°</span></div>`;
   }).join('');
 
-  sheet.classList.add('open');
+  // Position near the planet: use svgBBox (screen coords of planet hit area)
+  tt.classList.add('visible');
+  // Let browser lay out first so offsetHeight is accurate
+  requestAnimationFrame(() => {
+    const ttW = Math.min(tt.offsetWidth || 200, 260);
+    const ttH = tt.offsetHeight || 120;
+    const margin = 12;
+    const chartRect = document.getElementById('chart-area').getBoundingClientRect();
+    const mobBarH = 56;
 
-  // Also highlight aspects in SVG
+    // Prefer above the planet, centred horizontally
+    let x = (svgBBox.x + svgBBox.width / 2) - ttW / 2;
+    let y = svgBBox.y - ttH - margin;
+
+    // Clamp to chart area
+    x = Math.max(chartRect.left + 8, Math.min(x, chartRect.right - ttW - 8));
+    if (y < chartRect.top + 8) y = svgBBox.y + svgBBox.height + margin; // flip below
+    if (y + ttH > window.innerHeight - mobBarH - 8) y = svgBBox.y - ttH - margin;
+
+    tt.style.left = x + 'px';
+    tt.style.top  = y + 'px';
+  });
+
+  // Highlight SVG aspects
   if (ctrlState.tooltip) {
-    const svg = document.getElementById('chart-svg');
-    svg.querySelectorAll('.asp-line').forEach(line => {
+    document.getElementById('chart-svg').querySelectorAll('.asp-line').forEach(line => {
       const [n1, n2] = (line.dataset.asp || '').split('|');
       const rel = n1 === planet.name || n2 === planet.name;
       line.setAttribute('opacity', rel ? '0.9' : '0.08');
@@ -1718,29 +1981,134 @@ window.openMobPlanetInfo = function(planet, houses, aspects) {
   if (ctrlState.highlight) highlightPanelForPlanet(planet.name);
 };
 
-window.closeMobPlanetInfo = function() {
-  document.getElementById('mob-planet-info').classList.remove('open');
+window.closeMobPlanetTooltip = function() {
+  _activeMobPlanetName = null;
+  document.getElementById('mob-planet-tooltip').classList.remove('visible');
   onPlanetLeave('__none__');
 };
 
-// ── SVG touch support: tap on planet opens mob info sheet ────────────────────
-// Inject touch handler into drawPlanetSymbols hit circles
-// This is handled by passing openMobPlanetInfo into the existing hover flow:
-// onPlanetHover already calls openMobPlanetInfo when on mobile.
-// We patch the hit element's touchstart event in drawPlanetSymbols above,
-// but since that function already exists we add a global touchstart listener
-// on the SVG to catch taps on planet hit areas.
-document.getElementById('chart-svg').addEventListener('touchstart', function(e) {
-  const touch = e.changedTouches[0];
-  const el = document.elementFromPoint(touch.clientX, touch.clientY);
-  if (el && el.dataset.planetName && _lastRender) {
+// Tap outside tooltip closes it
+document.addEventListener('touchstart', function(e) {
+  if (!isMobile()) return;
+  const tt = document.getElementById('mob-planet-tooltip');
+  if (!tt.classList.contains('visible')) return;
+  if (!tt.contains(e.target) && !e.target.dataset.planetName) {
+    closeMobPlanetTooltip();
+  }
+}, { passive: true });
+
+// ── SVG touch: pinch-zoom + pan + tap on planets ─────────────────────────────
+let _zoomState = { scale: 1, tx: 0, ty: 0 };
+let _lastTouches = null;
+let _isPinching = false;
+let _panStart = null;
+
+function applyZoomTransform() {
+  const wrap = document.getElementById('chart-zoom-wrap');
+  const { scale, tx, ty } = _zoomState;
+  wrap.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+  wrap.style.transformOrigin = '50% 50%';
+  const resetBtn = document.getElementById('btn-zoom-reset');
+  if (scale !== 1 || tx !== 0 || ty !== 0) {
+    resetBtn.classList.add('visible');
+  } else {
+    resetBtn.classList.remove('visible');
+  }
+}
+
+window.resetZoom = function() {
+  _zoomState = { scale: 1, tx: 0, ty: 0 };
+  const wrap = document.getElementById('chart-zoom-wrap');
+  wrap.style.transition = 'transform 0.3s ease';
+  applyZoomTransform();
+  setTimeout(() => { wrap.style.transition = ''; }, 320);
+};
+
+function getTouchMidpoint(t1, t2) {
+  return {
+    x: (t1.clientX + t2.clientX) / 2,
+    y: (t1.clientY + t2.clientY) / 2
+  };
+}
+function getTouchDist(t1, t2) {
+  const dx = t1.clientX - t2.clientX, dy = t1.clientY - t2.clientY;
+  return Math.sqrt(dx*dx + dy*dy);
+}
+
+const svgEl = document.getElementById('chart-svg');
+
+svgEl.addEventListener('touchstart', function(e) {
+  if (!isMobile()) return;
+
+  if (e.touches.length === 1) {
+    // Single tap: check for planet hit or start pan
+    const touch = e.touches[0];
+    const target = document.elementFromPoint(touch.clientX, touch.clientY);
+
+    if (target && target.dataset.planetName && _lastRender) {
+      // Planet tap
+      e.preventDefault();
+      const [planets, houses, aspects] = _lastRender;
+      const allPlanets = [...(planets || []), ...(_lastRender[4] || [])];
+      const planet = allPlanets.find(p => p.name === target.dataset.planetName);
+      if (planet) {
+        const bbox = target.getBoundingClientRect();
+        showMobPlanetTooltip(planet, houses, aspects, bbox);
+      }
+      return;
+    }
+
+    // Start pan
+    _panStart = { x: touch.clientX - _zoomState.tx, y: touch.clientY - _zoomState.ty };
+    _isPinching = false;
+
+  } else if (e.touches.length === 2) {
+    // Pinch start
     e.preventDefault();
-    const [planets, houses, aspects] = _lastRender;
-    const allPlanets = planets.concat(_lastRender[4] || []);
-    const planet = allPlanets.find(p => p.name === el.dataset.planetName);
-    if (planet) openMobPlanetInfo(planet, houses, aspects);
+    _isPinching = true;
+    _panStart = null;
+    _lastTouches = { dist: getTouchDist(e.touches[0], e.touches[1]), mid: getTouchMidpoint(e.touches[0], e.touches[1]), scale: _zoomState.scale, tx: _zoomState.tx, ty: _zoomState.ty };
   }
 }, { passive: false });
+
+svgEl.addEventListener('touchmove', function(e) {
+  if (!isMobile()) return;
+
+  if (e.touches.length === 2 && _lastTouches) {
+    e.preventDefault();
+    const newDist = getTouchDist(e.touches[0], e.touches[1]);
+    const scaleRatio = newDist / _lastTouches.dist;
+    const newScale = Math.max(0.8, Math.min(5, _lastTouches.scale * scaleRatio));
+
+    const mid = getTouchMidpoint(e.touches[0], e.touches[1]);
+    const chartRect = document.getElementById('chart-area').getBoundingClientRect();
+    // Pan delta from midpoint
+    const dTx = mid.x - _lastTouches.mid.x;
+    const dTy = mid.y - _lastTouches.mid.y;
+
+    _zoomState.scale = newScale;
+    _zoomState.tx = _lastTouches.tx + dTx;
+    _zoomState.ty = _lastTouches.ty + dTy;
+    applyZoomTransform();
+
+  } else if (e.touches.length === 1 && _panStart && !_isPinching && _zoomState.scale > 1) {
+    e.preventDefault();
+    const touch = e.touches[0];
+    _zoomState.tx = touch.clientX - _panStart.x;
+    _zoomState.ty = touch.clientY - _panStart.y;
+    applyZoomTransform();
+  }
+}, { passive: false });
+
+svgEl.addEventListener('touchend', function(e) {
+  if (!isMobile()) return;
+  if (e.touches.length < 2) {
+    _isPinching = false;
+    _lastTouches = null;
+  }
+  if (e.touches.length === 0) _panStart = null;
+}, { passive: true });
+
 
 </script>
 </body>

@@ -353,6 +353,14 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
   font-size:1.1rem; cursor:pointer; padding:0.2rem 0.4rem; line-height:1;
   -webkit-tap-highlight-color:transparent;
 }
+.mob-sheet-reset {
+  background:transparent; border:1px solid rgba(201,168,76,0.2);
+  color:var(--text-faint); font-size:0.85rem; cursor:pointer;
+  padding:0.15rem 0.5rem; border-radius:4px; line-height:1;
+  font-family:'Cinzel',serif; letter-spacing:0.05em;
+  -webkit-tap-highlight-color:transparent; transition:all 0.15s;
+}
+.mob-sheet-reset:active { color:var(--gold); border-color:var(--gold); }
 .mob-sheet-body {
   overflow-y:auto; -webkit-overflow-scrolling:touch;
   padding:0.9rem 1rem 1rem; flex:1;
@@ -606,127 +614,132 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
 <!-- Panel overlay (mobile/tablet backdrop) -->
 <div class="panel-overlay" id="panel-overlay" onclick="closeAllPanels()"></div>
 
+<!--
+  SHARED FORM TABS — single source of truth for both desktop sidebar and mobile sheet.
+  These live outside .sidebar so both contexts use the same real DOM elements and IDs.
+  CSS keeps them hidden by default; switchTab / mobile JS moves/shows them as needed.
+-->
+<div id="forms-host" style="display:none">
+  <!-- LIVE TAB -->
+  <div id="tab-live" class="tab-content active">
+    <div class="sec">Localização</div>
+    <div class="fg loc-wrap">
+      <label>Cidade</label>
+      <input type="text" id="live-loc" placeholder="Digite uma cidade…" autocomplete="off" oninput="searchLocation(this.value,'live')">
+      <div class="loc-suggestions" id="live-suggestions"></div>
+      <div class="loc-coords" id="live-coords"></div>
+      <input type="hidden" id="live-lat" value="-19.92">
+      <input type="hidden" id="live-lng" value="-43.94">
+      <input type="hidden" id="live-tz"  value="America/Sao_Paulo">
+    </div>
+    <div class="sep"></div>
+    <div class="sec">Data &amp; Hora</div>
+    <div class="fg"><label>Data</label><input type="date" id="live-date"></div>
+    <div class="r2">
+      <div class="fg"><label>Hora</label><input type="number" id="live-hour" min="0" max="23" value="12"></div>
+      <div class="fg"><label>Minuto</label><input type="number" id="live-min"  min="0" max="59" value="0"></div>
+    </div>
+    <button class="calc-btn" onclick="calcLive()">✦ Atualizar Céu</button>
+  </div>
+
+  <!-- NATAL TAB -->
+  <div id="tab-natal" class="tab-content">
+    <div class="sec">Dados de Nascimento</div>
+    <div class="fg"><label>Nome</label><input type="text" id="n1-name" value="Pessoa"></div>
+    <div class="fg loc-wrap">
+      <label>Cidade natal</label>
+      <input type="text" id="n1-loc" placeholder="Digite uma cidade…" autocomplete="off" oninput="searchLocation(this.value,'n1')">
+      <div class="loc-suggestions" id="n1-suggestions"></div>
+      <div class="loc-coords" id="n1-coords"></div>
+      <input type="hidden" id="n1-lat" value="-19.92">
+      <input type="hidden" id="n1-lng" value="-43.94">
+      <input type="hidden" id="n1-tz"  value="America/Sao_Paulo">
+    </div>
+    <div class="fg"><label>Data de nascimento</label><input type="date" id="n1-date" value="1990-01-01"></div>
+    <div class="r2">
+      <div class="fg"><label>Hora</label><input type="number" id="n1-hour" value="12" min="0" max="23"></div>
+      <div class="fg"><label>Minuto</label><input type="number" id="n1-min"  value="0"  min="0" max="59"></div>
+    </div>
+    <div class="fg"><label>Sistema de Casas</label>
+      <select id="n1-house">
+        <option value="P" selected>Placidus</option>
+        <option value="K">Koch</option>
+        <option value="O">Porfírio</option>
+        <option value="R">Regiomontanus</option>
+        <option value="C">Campanus</option>
+        <option value="E">Equal (igual)</option>
+        <option value="W">Whole Sign</option>
+      </select>
+    </div>
+    <button class="calc-btn" onclick="calcNatal()">✦ Calcular Mapa</button>
+  </div>
+
+  <!-- SYNASTRY TAB -->
+  <div id="tab-synastry" class="tab-content">
+    <div class="sec">Pessoa A</div>
+    <div class="fg"><label>Nome</label><input type="text" id="s1-name" value="Pessoa A"></div>
+    <div class="fg loc-wrap">
+      <label>Cidade natal</label>
+      <input type="text" id="s1-loc" placeholder="Digite uma cidade…" autocomplete="off" oninput="searchLocation(this.value,'s1')">
+      <div class="loc-suggestions" id="s1-suggestions"></div>
+      <div class="loc-coords" id="s1-coords"></div>
+      <input type="hidden" id="s1-lat" value="-19.92"><input type="hidden" id="s1-lng" value="-43.94"><input type="hidden" id="s1-tz" value="America/Sao_Paulo">
+    </div>
+    <div class="fg"><label>Data</label><input type="date" id="s1-date" value="1990-01-01"></div>
+    <div class="r2">
+      <div class="fg"><label>Hora</label><input type="number" id="s1-hour" value="12"></div>
+      <div class="fg"><label>Min</label><input type="number" id="s1-min" value="0"></div>
+    </div>
+    <div class="sep"></div>
+    <div class="sec">Pessoa B</div>
+    <div class="fg"><label>Nome</label><input type="text" id="s2-name" value="Pessoa B"></div>
+    <div class="fg loc-wrap">
+      <label>Cidade natal</label>
+      <input type="text" id="s2-loc" placeholder="Digite uma cidade…" autocomplete="off" oninput="searchLocation(this.value,'s2')">
+      <div class="loc-suggestions" id="s2-suggestions"></div>
+      <div class="loc-coords" id="s2-coords"></div>
+      <input type="hidden" id="s2-lat" value="-23.55"><input type="hidden" id="s2-lng" value="-46.63"><input type="hidden" id="s2-tz" value="America/Sao_Paulo">
+    </div>
+    <div class="fg"><label>Data</label><input type="date" id="s2-date" value="1992-06-15"></div>
+    <div class="r2">
+      <div class="fg"><label>Hora</label><input type="number" id="s2-hour" value="9"></div>
+      <div class="fg"><label>Min</label><input type="number" id="s2-min" value="30"></div>
+    </div>
+    <button class="calc-btn" onclick="calcSynastry()">✦ Calcular Sinastria</button>
+  </div>
+
+  <!-- TRANSITS TAB -->
+  <div id="tab-transits" class="tab-content">
+    <div class="sec">Mapa Natal Base</div>
+    <div class="fg"><label>Nome</label><input type="text" id="t-name" value="Pessoa"></div>
+    <div class="fg loc-wrap">
+      <label>Cidade natal</label>
+      <input type="text" id="t-loc" placeholder="Digite uma cidade…" autocomplete="off" oninput="searchLocation(this.value,'t')">
+      <div class="loc-suggestions" id="t-suggestions"></div>
+      <div class="loc-coords" id="t-coords"></div>
+      <input type="hidden" id="t-lat" value="-19.92"><input type="hidden" id="t-lng" value="-43.94"><input type="hidden" id="t-tz" value="America/Sao_Paulo">
+    </div>
+    <div class="fg"><label>Data natal</label><input type="date" id="t-ndate" value="1990-01-01"></div>
+    <div class="r2">
+      <div class="fg"><label>Hora natal</label><input type="number" id="t-nhour" value="12"></div>
+      <div class="fg"><label>Min natal</label><input type="number" id="t-nmin" value="0"></div>
+    </div>
+    <div class="sep"></div>
+    <div class="sec">Data dos Trânsitos</div>
+    <div class="fg"><label>Data</label><input type="date" id="t-date"></div>
+    <div class="r2">
+      <div class="fg"><label>Hora</label><input type="number" id="t-hour" value="12"></div>
+      <div class="fg"><label>Fuso</label><input type="number" id="t-ttz" value="-3" step="0.5"></div>
+    </div>
+    <button class="calc-btn" onclick="calcTransits()">✦ Ver Trânsitos</button>
+  </div>
+</div>
+
 <!-- APP -->
 <main class="app">
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-
-    <!-- LIVE TAB -->
-    <div id="tab-live" class="tab-content active">
-      <div class="sec">Localização</div>
-      <div class="fg loc-wrap">
-        <label>Cidade</label>
-        <input type="text" id="live-loc" placeholder="Digite uma cidade…" autocomplete="off" oninput="searchLocation(this.value,'live')">
-        <div class="loc-suggestions" id="live-suggestions"></div>
-        <div class="loc-coords" id="live-coords"></div>
-        <input type="hidden" id="live-lat" value="-19.92">
-        <input type="hidden" id="live-lng" value="-43.94">
-        <input type="hidden" id="live-tz"  value="America/Sao_Paulo">
-      </div>
-      <div class="sep"></div>
-      <div class="sec">Data &amp; Hora</div>
-      <div class="fg"><label>Data</label><input type="date" id="live-date"></div>
-      <div class="r2">
-        <div class="fg"><label>Hora</label><input type="number" id="live-hour" min="0" max="23" value="12"></div>
-        <div class="fg"><label>Minuto</label><input type="number" id="live-min"  min="0" max="59" value="0"></div>
-      </div>
-      <button class="calc-btn" onclick="calcLive()">✦ Atualizar Céu</button>
-    </div>
-
-    <!-- NATAL TAB -->
-    <div id="tab-natal" class="tab-content">
-      <div class="sec">Dados de Nascimento</div>
-      <div class="fg"><label>Nome</label><input type="text" id="n1-name" value="Pessoa"></div>
-      <div class="fg loc-wrap">
-        <label>Cidade natal</label>
-        <input type="text" id="n1-loc" placeholder="Digite uma cidade…" autocomplete="off" oninput="searchLocation(this.value,'n1')">
-        <div class="loc-suggestions" id="n1-suggestions"></div>
-        <div class="loc-coords" id="n1-coords"></div>
-        <input type="hidden" id="n1-lat" value="-19.92">
-        <input type="hidden" id="n1-lng" value="-43.94">
-        <input type="hidden" id="n1-tz"  value="America/Sao_Paulo">
-      </div>
-      <div class="fg"><label>Data de nascimento</label><input type="date" id="n1-date" value="1990-01-01"></div>
-      <div class="r2">
-        <div class="fg"><label>Hora</label><input type="number" id="n1-hour" value="12" min="0" max="23"></div>
-        <div class="fg"><label>Minuto</label><input type="number" id="n1-min"  value="0"  min="0" max="59"></div>
-      </div>
-      <div class="fg"><label>Sistema de Casas</label>
-        <select id="n1-house">
-          <option value="P" selected>Placidus</option>
-          <option value="K">Koch</option>
-          <option value="O">Porfírio</option>
-          <option value="R">Regiomontanus</option>
-          <option value="C">Campanus</option>
-          <option value="E">Equal (igual)</option>
-          <option value="W">Whole Sign</option>
-        </select>
-      </div>
-      <button class="calc-btn" onclick="calcNatal()">✦ Calcular Mapa</button>
-    </div>
-
-    <!-- SYNASTRY TAB -->
-    <div id="tab-synastry" class="tab-content">
-      <div class="sec">Pessoa A</div>
-      <div class="fg"><label>Nome</label><input type="text" id="s1-name" value="Pessoa A"></div>
-      <div class="fg loc-wrap">
-        <label>Cidade natal</label>
-        <input type="text" id="s1-loc" placeholder="Digite uma cidade…" autocomplete="off" oninput="searchLocation(this.value,'s1')">
-        <div class="loc-suggestions" id="s1-suggestions"></div>
-        <div class="loc-coords" id="s1-coords"></div>
-        <input type="hidden" id="s1-lat" value="-19.92"><input type="hidden" id="s1-lng" value="-43.94"><input type="hidden" id="s1-tz" value="America/Sao_Paulo">
-      </div>
-      <div class="fg"><label>Data</label><input type="date" id="s1-date" value="1990-01-01"></div>
-      <div class="r2">
-        <div class="fg"><label>Hora</label><input type="number" id="s1-hour" value="12"></div>
-        <div class="fg"><label>Min</label><input type="number" id="s1-min" value="0"></div>
-      </div>
-      <div class="sep"></div>
-      <div class="sec">Pessoa B</div>
-      <div class="fg"><label>Nome</label><input type="text" id="s2-name" value="Pessoa B"></div>
-      <div class="fg loc-wrap">
-        <label>Cidade natal</label>
-        <input type="text" id="s2-loc" placeholder="Digite uma cidade…" autocomplete="off" oninput="searchLocation(this.value,'s2')">
-        <div class="loc-suggestions" id="s2-suggestions"></div>
-        <div class="loc-coords" id="s2-coords"></div>
-        <input type="hidden" id="s2-lat" value="-23.55"><input type="hidden" id="s2-lng" value="-46.63"><input type="hidden" id="s2-tz" value="America/Sao_Paulo">
-      </div>
-      <div class="fg"><label>Data</label><input type="date" id="s2-date" value="1992-06-15"></div>
-      <div class="r2">
-        <div class="fg"><label>Hora</label><input type="number" id="s2-hour" value="9"></div>
-        <div class="fg"><label>Min</label><input type="number" id="s2-min" value="30"></div>
-      </div>
-      <button class="calc-btn" onclick="calcSynastry()">✦ Calcular Sinastria</button>
-    </div>
-
-    <!-- TRANSITS TAB -->
-    <div id="tab-transits" class="tab-content">
-      <div class="sec">Mapa Natal Base</div>
-      <div class="fg"><label>Nome</label><input type="text" id="t-name" value="Pessoa"></div>
-      <div class="fg loc-wrap">
-        <label>Cidade natal</label>
-        <input type="text" id="t-loc" placeholder="Digite uma cidade…" autocomplete="off" oninput="searchLocation(this.value,'t')">
-        <div class="loc-suggestions" id="t-suggestions"></div>
-        <div class="loc-coords" id="t-coords"></div>
-        <input type="hidden" id="t-lat" value="-19.92"><input type="hidden" id="t-lng" value="-43.94"><input type="hidden" id="t-tz" value="America/Sao_Paulo">
-      </div>
-      <div class="fg"><label>Data natal</label><input type="date" id="t-ndate" value="1990-01-01"></div>
-      <div class="r2">
-        <div class="fg"><label>Hora natal</label><input type="number" id="t-nhour" value="12"></div>
-        <div class="fg"><label>Min natal</label><input type="number" id="t-nmin" value="0"></div>
-      </div>
-      <div class="sep"></div>
-      <div class="sec">Data dos Trânsitos</div>
-      <div class="fg"><label>Data</label><input type="date" id="t-date"></div>
-      <div class="r2">
-        <div class="fg"><label>Hora</label><input type="number" id="t-hour" value="12"></div>
-        <div class="fg"><label>Fuso</label><input type="number" id="t-ttz" value="-3" step="0.5"></div>
-      </div>
-      <button class="calc-btn" onclick="calcTransits()">✦ Ver Trânsitos</button>
-    </div>
-
-  </aside>
+  <!-- SIDEBAR (desktop) — form tabs injected here by placeFormInSidebar() -->
+  <aside class="sidebar" id="sidebar"></aside>
 
   <!-- CHART AREA -->
   <section class="chart-area" id="chart-area">
@@ -803,11 +816,13 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
   <div class="mob-sheet-handle"></div>
   <div class="mob-sheet-header">
     <span class="mob-sheet-title" id="mob-form-title">Céu ao Vivo</span>
-    <button class="mob-sheet-close" onclick="closeMobSheet('form')">✕</button>
+    <div style="display:flex;align-items:center;gap:0.5rem">
+      <button class="mob-sheet-reset" id="mob-form-reset" onclick="resetMobForm()" title="Limpar formulário">↺</button>
+      <button class="mob-sheet-close" onclick="closeMobSheet('form')">✕</button>
+    </div>
   </div>
-  <div class="mob-sheet-body" id="mob-form-body">
-    <!-- Content injected by JS based on active tab -->
-  </div>
+  <!-- Form tab element moved here by JS via appendChild — same DOM node, same IDs -->
+  <div class="mob-sheet-body" id="mob-form-body"></div>
 </div>
 
 <!-- Info sheet (bottom sheet for tables) -->
@@ -1750,6 +1765,7 @@ function renderTransitInfo(transit, aspects) {
 }
 
 // ── Status ────────────────────────────────────────────────────────────────────
+// ── Status ────────────────────────────────────────────────────────────────────
 let stTimer;
 function showStatus(msg) {
   const b = document.getElementById('status-bar');
@@ -1759,223 +1775,234 @@ function showStatus(msg) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// MOBILE UI
-// Only runs on ≤767px. Desktop layout is untouched.
+// SHARED FORM PLACEMENT
+// Form tabs are single DOM nodes shared between desktop sidebar and mobile sheet.
+// placeFormsInSidebar() / placeFormInSheet() move the real element — no cloning.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function isMobile() { return window.innerWidth <= 767; }
 
-// ── Tab switching: desktop uses original switchTab, mobile uses mobSwitchTab ──
-// switchTab is defined above (desktop). We leave it intact.
-// On mobile the bottom bar calls mobSwitchTab which handles both logics.
+const FORM_TITLES = { live:'Céu ao Vivo', natal:'Mapa Natal', synastry:'Sinastria', transits:'Trânsitos' };
 
+function placeFormsInSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  ['live','natal','synastry','transits'].forEach(tab => {
+    const el = document.getElementById('tab-' + tab);
+    if (el && el.parentElement !== sidebar) sidebar.appendChild(el);
+    el.style.display = '';
+  });
+}
+
+function placeFormInSheet(tab) {
+  const body = document.getElementById('mob-form-body');
+  const el = document.getElementById('tab-' + tab);
+  if (!el) return;
+  if (el.parentElement !== body) { body.innerHTML = ''; body.appendChild(el); }
+  el.style.display = 'block';
+  document.getElementById('mob-form-title').textContent = FORM_TITLES[tab] || tab;
+}
+
+function returnFormToHost(tab) {
+  const host = document.getElementById('forms-host');
+  const el = document.getElementById('tab-' + tab);
+  if (el && el.parentElement !== host) { host.appendChild(el); el.style.display = ''; }
+}
+
+function initFormPlacement() {
+  if (!isMobile()) {
+    placeFormsInSidebar();
+    document.getElementById('tab-live').classList.add('active');
+  }
+}
+
+// ── switchTab: desktop only ───────────────────────────────────────────────────
+window.switchTab = function(tab) {
+  currentTab = tab;
+  ['live','natal','synastry','transits'].forEach((t, i) => {
+    const btn = document.querySelectorAll('.tab-btn')[i];
+    if (btn) btn.classList.toggle('active', t === tab);
+    if (!isMobile()) {
+      const el = document.getElementById('tab-' + t);
+      if (el) el.classList.toggle('active', t === tab);
+    }
+  });
+};
+
+// ── goNow: always render live ─────────────────────────────────────────────────
+window.goNow = function() {
+  navDate = new Date();
+  currentTab = 'live';
+  updateTimeDisplay();
+  syncDateFields();
+  renderLiveChart();
+  if (isMobile()) {
+    closeMobSheets();
+    ['live','natal','synastry','transits'].forEach(t => {
+      const btn = document.getElementById('mbb-' + t);
+      if (btn) btn.classList.toggle('active', t === 'live');
+    });
+    showStatus('Céu ao Vivo ✦');
+  } else {
+    switchTab('live');
+  }
+};
+
+// ── mobSwitchTab: mobile bottom bar ──────────────────────────────────────────
 window.mobSwitchTab = function(tab) {
-  // Always run the desktop switch (updates chart, forms, panel content)
-  switchTab(tab);
-
-  if (!isMobile()) return;
-
-  // Sync bottom bar active state
   ['live','natal','synastry','transits'].forEach(t => {
     const btn = document.getElementById('mbb-' + t);
     if (btn) btn.classList.toggle('active', t === tab);
   });
-
-  // If switching to a mode that needs input (natal/synastry/transits),
-  // open the form sheet. For live, just show the chart.
   if (tab === 'live') {
     closeMobSheets();
+    currentTab = 'live';
+    renderLiveChart();
     showStatus('Céu ao Vivo ✦');
   } else {
     openMobFormSheet(tab);
   }
 };
 
-// ── Form sheet ────────────────────────────────────────────────────────────────
-const MOB_FORM_TITLES = {
-  live: 'Céu ao Vivo', natal: 'Mapa Natal',
-  synastry: 'Sinastria', transits: 'Trânsitos'
-};
-
-// Map tab names to their sidebar form IDs (already defined in the desktop sidebar)
-const FORM_TAB_IDS = {
-  live:      'tab-live',
-  natal:     'tab-natal',
-  synastry:  'tab-synastry',
-  transits:  'tab-transits'
-};
+// ── Mobile panels ─────────────────────────────────────────────────────────────
+let _currentMobTab = null;
 
 window.openMobFormSheet = function(tab) {
   if (!isMobile()) return;
-
-  const sheet = document.getElementById('mob-form-sheet');
-  const title = document.getElementById('mob-form-title');
-  const body  = document.getElementById('mob-form-body');
-
-  title.textContent = MOB_FORM_TITLES[tab] || tab;
-
-  // Clone the desktop form content into the sheet body
-  const sourceTab = document.getElementById(FORM_TAB_IDS[tab]);
-  if (sourceTab) {
-    body.innerHTML = sourceTab.innerHTML;
-    // Re-bind oninput for location search fields (they use inline oninput)
-    // The cloned HTML retains oninput attributes so they work as-is.
-  }
-
-  // Close info sheet if open
+  currentTab = tab;
+  _currentMobTab = tab;
+  document.getElementById('mob-form-reset').style.display = tab === 'live' ? 'none' : '';
+  placeFormInSheet(tab);
   document.getElementById('mob-info-sheet').classList.remove('open');
   document.getElementById('mob-settings-tray').classList.remove('open');
-  sheet.classList.add('open');
+  document.getElementById('mob-form-sheet').classList.add('open');
   document.getElementById('panel-overlay').classList.add('visible');
 };
 
 window.closeMobSheet = function(which) {
   if (which === 'form') {
     document.getElementById('mob-form-sheet').classList.remove('open');
+    if (_currentMobTab) returnFormToHost(_currentMobTab);
   } else {
     document.getElementById('mob-info-sheet').classList.remove('open');
   }
-  // Hide overlay if both sheets closed
   const formOpen = document.getElementById('mob-form-sheet').classList.contains('open');
   const infoOpen = document.getElementById('mob-info-sheet').classList.contains('open');
-  if (!formOpen && !infoOpen) {
-    document.getElementById('panel-overlay').classList.remove('visible');
-  }
+  if (!formOpen && !infoOpen) document.getElementById('panel-overlay').classList.remove('visible');
 };
 
 window.closeMobSheets = function() {
+  if (_currentMobTab) returnFormToHost(_currentMobTab);
   document.getElementById('mob-form-sheet').classList.remove('open');
   document.getElementById('mob-info-sheet').classList.remove('open');
   document.getElementById('mob-settings-tray').classList.remove('open');
   document.getElementById('panel-overlay').classList.remove('visible');
 };
 
-// ── Info sheet ────────────────────────────────────────────────────────────────
+window.closeAllPanels = function() {
+  if (isMobile()) { closeMobSheets(); return; }
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('info-panel').classList.remove('open');
+  document.getElementById('panel-overlay').classList.remove('visible');
+};
+
+const FORM_DEFAULTS = {
+  natal:    { 'n1-name':'Pessoa','n1-loc':'','n1-lat':'-19.92','n1-lng':'-43.94','n1-tz':'America/Sao_Paulo','n1-date':'1990-01-01','n1-hour':'12','n1-min':'0','n1-coords':'','n1-house':'P' },
+  synastry: { 's1-name':'Pessoa A','s1-loc':'','s1-lat':'-19.92','s1-lng':'-43.94','s1-tz':'America/Sao_Paulo','s1-date':'1990-01-01','s1-hour':'12','s1-min':'0','s1-coords':'','s2-name':'Pessoa B','s2-loc':'','s2-lat':'-23.55','s2-lng':'-46.63','s2-tz':'America/Sao_Paulo','s2-date':'1992-06-15','s2-hour':'9','s2-min':'30','s2-coords':'' },
+  transits: { 't-name':'Pessoa','t-loc':'','t-lat':'-19.92','t-lng':'-43.94','t-tz':'America/Sao_Paulo','t-ndate':'1990-01-01','t-nhour':'12','t-nmin':'0','t-coords':'','t-hour':'12','t-ttz':'-3' },
+};
+
+window.resetMobForm = function() {
+  if (!_currentMobTab || !FORM_DEFAULTS[_currentMobTab]) return;
+  Object.entries(FORM_DEFAULTS[_currentMobTab]).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (id.endsWith('-coords')) { el.innerHTML = ''; return; }
+    el.value = val;
+  });
+  showStatus('Formulário limpo ↺');
+};
+
 window.openMobInfoSheet = function() {
   if (!isMobile()) return;
-
-  // Sync content from desktop panel into mobile lists
-  const syncList = (srcId, dstId) => {
-    const src = document.getElementById(srcId);
-    const dst = document.getElementById(dstId);
-    if (src && dst) dst.innerHTML = src.innerHTML;
-  };
-  syncList('planet-list',  'mob-planet-list');
-  syncList('house-list',   'mob-house-list');
-  syncList('aspect-list',  'mob-aspect-list');
-
+  const sync = (s,d) => { const se=document.getElementById(s),de=document.getElementById(d); if(se&&de) de.innerHTML=se.innerHTML; };
+  sync('planet-list','mob-planet-list'); sync('house-list','mob-house-list'); sync('aspect-list','mob-aspect-list');
+  if (_currentMobTab) returnFormToHost(_currentMobTab);
   document.getElementById('mob-form-sheet').classList.remove('open');
   document.getElementById('mob-settings-tray').classList.remove('open');
   document.getElementById('mob-info-sheet').classList.add('open');
   document.getElementById('panel-overlay').classList.add('visible');
 };
 
-// ── Settings tray ─────────────────────────────────────────────────────────────
 window.toggleSettingsTray = function() {
   const tray = document.getElementById('mob-settings-tray');
   const isOpen = tray.classList.contains('open');
-  // Close sheets if open
+  if (_currentMobTab) returnFormToHost(_currentMobTab);
   document.getElementById('mob-form-sheet').classList.remove('open');
   document.getElementById('mob-info-sheet').classList.remove('open');
   document.getElementById('panel-overlay').classList.remove('visible');
   tray.classList.toggle('open', !isOpen);
 };
 
-// Patch toggleCtrl to also sync tray buttons
 const _origToggleCtrl = window.toggleCtrl;
 window.toggleCtrl = function(key) {
   _origToggleCtrl(key);
-  // Sync tray button state
   const trayBtn = document.getElementById('tray-' + key);
   if (trayBtn) trayBtn.classList.toggle('on', ctrlState[key]);
 };
 
-// ── Calc wrappers: on mobile, close form sheet after calc, sync info ──────────
 function mobAfterCalc() {
   if (!isMobile()) return;
   closeMobSheets();
-  // After a short delay let the chart render then sync info sheet content
   setTimeout(() => {
-    const syncList = (srcId, dstId) => {
-      const src = document.getElementById(srcId);
-      const dst = document.getElementById(dstId);
-      if (src && dst) dst.innerHTML = src.innerHTML;
-    };
-    syncList('planet-list',  'mob-planet-list');
-    syncList('house-list',   'mob-house-list');
-    syncList('aspect-list',  'mob-aspect-list');
-  }, 120);
+    const sync = (s,d) => { const se=document.getElementById(s),de=document.getElementById(d); if(se&&de) de.innerHTML=se.innerHTML; };
+    sync('planet-list','mob-planet-list'); sync('house-list','mob-house-list'); sync('aspect-list','mob-aspect-list');
+  }, 150);
 }
 
-// Patch the four calc functions to call mobAfterCalc on mobile
 ;['calcLive','calcNatal','calcSynastry','calcTransits'].forEach(fn => {
   const orig = window[fn];
-  window[fn] = function(...args) {
-    const result = orig.apply(this, args);
-    mobAfterCalc();
-    return result;
-  };
+  window[fn] = function(...args) { const r=orig.apply(this,args); mobAfterCalc(); return r; };
 });
 
-// ── Mobile planet tooltip (tap = show, tap outside = hide) ───────────────────
+// ── Mobile planet tooltip (tap + drag) ────────────────────────────────────────
 let _activeMobPlanetName = null;
+let _ttDrag = { active:false, startX:0, startY:0, origX:0, origY:0 };
 
 window.showMobPlanetTooltip = function(planet, houses, aspects, svgBBox) {
-  if (!isMobile()) return;
-  if (!ctrlState.tooltip) return;
-
-  // If same planet tapped again → close
-  if (_activeMobPlanetName === planet.name) {
-    closeMobPlanetTooltip();
-    return;
-  }
+  if (!isMobile() || !ctrlState.tooltip) return;
+  if (_activeMobPlanetName === planet.name) { closeMobPlanetTooltip(); return; }
   _activeMobPlanetName = planet.name;
 
   const tt = document.getElementById('mob-planet-tooltip');
-  document.getElementById('mpt-name').textContent  = planet.name + (planet.retro && planet.id > 1 ? ' ℞' : '');
-  document.getElementById('mpt-name').style.color   = planet.color;
-  document.getElementById('mpt-pos').textContent    = fmtShort(planet.lon);
+  document.getElementById('mpt-name').textContent = planet.name + (planet.retro&&planet.id>1?' ℞':'');
+  document.getElementById('mpt-name').style.color = planet.color;
+  document.getElementById('mpt-pos').textContent  = fmtShort(planet.lon);
   const house = houses ? getPlanetHouse(planet.lon, houses.cusps) : null;
-  document.getElementById('mpt-house').textContent  = house ? `Casa ${house}` : '';
+  document.getElementById('mpt-house').textContent = house ? 'Casa '+house : '';
 
-  const related = aspects.filter(a => a.p1.name === planet.name || a.p2.name === planet.name);
-  document.getElementById('mpt-asps').innerHTML = related.slice(0, 6).map(a => {
-    const other = a.p1.name === planet.name ? a.p2 : a.p1;
-    return `<div class="mpt-asp-row" style="color:${a.type.color}">` +
-      `<span style="color:${other.color}">${other.glyph}</span> ` +
-      `${a.type.name.substring(0,6)} <span style="color:var(--gold-dim)">${a.orb}°</span></div>`;
+  const related = aspects.filter(a=>a.p1.name===planet.name||a.p2.name===planet.name);
+  document.getElementById('mpt-asps').innerHTML = related.slice(0,6).map(a => {
+    const o = a.p1.name===planet.name ? a.p2 : a.p1;
+    return `<div class="mpt-asp-row" style="color:${a.type.color}"><span style="color:${o.color}">${o.glyph}</span> ${a.type.name.substring(0,6)} <span style="color:var(--gold-dim)">${a.orb}°</span></div>`;
   }).join('');
 
-  // Position near the planet: use svgBBox (screen coords of planet hit area)
   tt.classList.add('visible');
-  // Let browser lay out first so offsetHeight is accurate
   requestAnimationFrame(() => {
-    const ttW = Math.min(tt.offsetWidth || 200, 260);
-    const ttH = tt.offsetHeight || 120;
-    const margin = 12;
-    const chartRect = document.getElementById('chart-area').getBoundingClientRect();
-    const mobBarH = 56;
-
-    // Prefer above the planet, centred horizontally
-    let x = (svgBBox.x + svgBBox.width / 2) - ttW / 2;
-    let y = svgBBox.y - ttH - margin;
-
-    // Clamp to chart area
-    x = Math.max(chartRect.left + 8, Math.min(x, chartRect.right - ttW - 8));
-    if (y < chartRect.top + 8) y = svgBBox.y + svgBBox.height + margin; // flip below
-    if (y + ttH > window.innerHeight - mobBarH - 8) y = svgBBox.y - ttH - margin;
-
-    tt.style.left = x + 'px';
-    tt.style.top  = y + 'px';
+    const ttW=Math.min(tt.offsetWidth||200,260), ttH=tt.offsetHeight||120, m=12;
+    const cr=document.getElementById('chart-area').getBoundingClientRect();
+    let x=(svgBBox.x+svgBBox.width/2)-ttW/2, y=svgBBox.y-ttH-m;
+    x=Math.max(cr.left+8,Math.min(x,cr.right-ttW-8));
+    if(y<cr.top+8) y=svgBBox.y+svgBBox.height+m;
+    if(y+ttH>window.innerHeight-56-8) y=svgBBox.y-ttH-m;
+    tt.style.left=x+'px'; tt.style.top=y+'px';
   });
 
-  // Highlight SVG aspects
   if (ctrlState.tooltip) {
     document.getElementById('chart-svg').querySelectorAll('.asp-line').forEach(line => {
-      const [n1, n2] = (line.dataset.asp || '').split('|');
-      const rel = n1 === planet.name || n2 === planet.name;
-      line.setAttribute('opacity', rel ? '0.9' : '0.08');
-      if (rel) line.setAttribute('stroke-width', 1.2);
+      const [n1,n2]=(line.dataset.asp||'').split('|');
+      const rel=n1===planet.name||n2===planet.name;
+      line.setAttribute('opacity',rel?'0.9':'0.08');
+      if(rel) line.setAttribute('stroke-width','1.2');
     });
   }
   if (ctrlState.highlight) highlightPanelForPlanet(planet.name);
@@ -1987,128 +2014,94 @@ window.closeMobPlanetTooltip = function() {
   onPlanetLeave('__none__');
 };
 
-// Tap outside tooltip closes it
-document.addEventListener('touchstart', function(e) {
-  if (!isMobile()) return;
-  const tt = document.getElementById('mob-planet-tooltip');
-  if (!tt.classList.contains('visible')) return;
-  if (!tt.contains(e.target) && !e.target.dataset.planetName) {
-    closeMobPlanetTooltip();
-  }
-}, { passive: true });
+const _mobTT = document.getElementById('mob-planet-tooltip');
+_mobTT.addEventListener('touchstart', function(e) {
+  if(e.touches.length!==1) return;
+  const t=e.touches[0], r=_mobTT.getBoundingClientRect();
+  _ttDrag={active:true,startX:t.clientX,startY:t.clientY,origX:r.left,origY:r.top};
+  e.stopPropagation();
+},{passive:true});
+_mobTT.addEventListener('touchmove', function(e) {
+  if(!_ttDrag.active||e.touches.length!==1) return;
+  e.preventDefault();
+  const t=e.touches[0];
+  const nx=Math.max(8,Math.min(_ttDrag.origX+(t.clientX-_ttDrag.startX),window.innerWidth-_mobTT.offsetWidth-8));
+  const ny=Math.max(8,Math.min(_ttDrag.origY+(t.clientY-_ttDrag.startY),window.innerHeight-56-_mobTT.offsetHeight-8));
+  _mobTT.style.left=nx+'px'; _mobTT.style.top=ny+'px';
+},{passive:false});
+_mobTT.addEventListener('touchend',()=>{ _ttDrag.active=false; },{passive:true});
 
-// ── SVG touch: pinch-zoom + pan + tap on planets ─────────────────────────────
-let _zoomState = { scale: 1, tx: 0, ty: 0 };
-let _lastTouches = null;
-let _isPinching = false;
-let _panStart = null;
+document.addEventListener('touchstart', function(e) {
+  if(!isMobile()) return;
+  const tt=document.getElementById('mob-planet-tooltip');
+  if(!tt.classList.contains('visible')) return;
+  if(!tt.contains(e.target)&&!e.target.dataset.planetName) closeMobPlanetTooltip();
+},{passive:true});
+
+// ── SVG touch: pinch-zoom + pan + planet tap ──────────────────────────────────
+let _zoomState={scale:1,tx:0,ty:0}, _lastTouches=null, _isPinching=false, _panStart=null;
 
 function applyZoomTransform() {
-  const wrap = document.getElementById('chart-zoom-wrap');
-  const { scale, tx, ty } = _zoomState;
-  wrap.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
-  wrap.style.transformOrigin = '50% 50%';
-  const resetBtn = document.getElementById('btn-zoom-reset');
-  if (scale !== 1 || tx !== 0 || ty !== 0) {
-    resetBtn.classList.add('visible');
-  } else {
-    resetBtn.classList.remove('visible');
-  }
+  const w=document.getElementById('chart-zoom-wrap'), {scale,tx,ty}=_zoomState;
+  w.style.transform=`translate(${tx}px,${ty}px) scale(${scale})`;
+  w.style.transformOrigin='50% 50%';
+  document.getElementById('btn-zoom-reset').classList.toggle('visible',scale!==1||tx!==0||ty!==0);
 }
 
 window.resetZoom = function() {
-  _zoomState = { scale: 1, tx: 0, ty: 0 };
-  const wrap = document.getElementById('chart-zoom-wrap');
-  wrap.style.transition = 'transform 0.3s ease';
-  applyZoomTransform();
-  setTimeout(() => { wrap.style.transition = ''; }, 320);
+  _zoomState={scale:1,tx:0,ty:0};
+  const w=document.getElementById('chart-zoom-wrap');
+  w.style.transition='transform 0.3s ease'; applyZoomTransform();
+  setTimeout(()=>{ w.style.transition=''; },320);
 };
 
-function getTouchMidpoint(t1, t2) {
-  return {
-    x: (t1.clientX + t2.clientX) / 2,
-    y: (t1.clientY + t2.clientY) / 2
-  };
-}
-function getTouchDist(t1, t2) {
-  const dx = t1.clientX - t2.clientX, dy = t1.clientY - t2.clientY;
-  return Math.sqrt(dx*dx + dy*dy);
-}
+function _tmid(t1,t2){return{x:(t1.clientX+t2.clientX)/2,y:(t1.clientY+t2.clientY)/2};}
+function _tdist(t1,t2){const dx=t1.clientX-t2.clientX,dy=t1.clientY-t2.clientY;return Math.sqrt(dx*dx+dy*dy);}
 
-const svgEl = document.getElementById('chart-svg');
+const svgEl=document.getElementById('chart-svg');
 
-svgEl.addEventListener('touchstart', function(e) {
-  if (!isMobile()) return;
-
-  if (e.touches.length === 1) {
-    // Single tap: check for planet hit or start pan
-    const touch = e.touches[0];
-    const target = document.elementFromPoint(touch.clientX, touch.clientY);
-
-    if (target && target.dataset.planetName && _lastRender) {
-      // Planet tap
+svgEl.addEventListener('touchstart',function(e){
+  if(!isMobile()) return;
+  if(e.touches.length===1){
+    const touch=e.touches[0], target=document.elementFromPoint(touch.clientX,touch.clientY);
+    if(target&&target.dataset.planetName&&_lastRender){
       e.preventDefault();
-      const [planets, houses, aspects] = _lastRender;
-      const allPlanets = [...(planets || []), ...(_lastRender[4] || [])];
-      const planet = allPlanets.find(p => p.name === target.dataset.planetName);
-      if (planet) {
-        const bbox = target.getBoundingClientRect();
-        showMobPlanetTooltip(planet, houses, aspects, bbox);
-      }
+      const [planets,houses,aspects]=_lastRender;
+      const all=[...(planets||[]),...(_lastRender[4]||[])];
+      const planet=all.find(p=>p.name===target.dataset.planetName);
+      if(planet){ const bbox=target.getBoundingClientRect(); showMobPlanetTooltip(planet,houses,aspects,bbox); }
       return;
     }
-
-    // Start pan
-    _panStart = { x: touch.clientX - _zoomState.tx, y: touch.clientY - _zoomState.ty };
-    _isPinching = false;
-
-  } else if (e.touches.length === 2) {
-    // Pinch start
-    e.preventDefault();
-    _isPinching = true;
-    _panStart = null;
-    _lastTouches = { dist: getTouchDist(e.touches[0], e.touches[1]), mid: getTouchMidpoint(e.touches[0], e.touches[1]), scale: _zoomState.scale, tx: _zoomState.tx, ty: _zoomState.ty };
+    _panStart={x:touch.clientX-_zoomState.tx,y:touch.clientY-_zoomState.ty}; _isPinching=false;
+  } else if(e.touches.length===2){
+    e.preventDefault(); _isPinching=true; _panStart=null;
+    _lastTouches={dist:_tdist(e.touches[0],e.touches[1]),mid:_tmid(e.touches[0],e.touches[1]),scale:_zoomState.scale,tx:_zoomState.tx,ty:_zoomState.ty};
   }
-}, { passive: false });
+},{passive:false});
 
-svgEl.addEventListener('touchmove', function(e) {
-  if (!isMobile()) return;
-
-  if (e.touches.length === 2 && _lastTouches) {
+svgEl.addEventListener('touchmove',function(e){
+  if(!isMobile()) return;
+  if(e.touches.length===2&&_lastTouches){
     e.preventDefault();
-    const newDist = getTouchDist(e.touches[0], e.touches[1]);
-    const scaleRatio = newDist / _lastTouches.dist;
-    const newScale = Math.max(0.8, Math.min(5, _lastTouches.scale * scaleRatio));
-
-    const mid = getTouchMidpoint(e.touches[0], e.touches[1]);
-    const chartRect = document.getElementById('chart-area').getBoundingClientRect();
-    // Pan delta from midpoint
-    const dTx = mid.x - _lastTouches.mid.x;
-    const dTy = mid.y - _lastTouches.mid.y;
-
-    _zoomState.scale = newScale;
-    _zoomState.tx = _lastTouches.tx + dTx;
-    _zoomState.ty = _lastTouches.ty + dTy;
+    const ns=Math.max(0.8,Math.min(5,_lastTouches.scale*(_tdist(e.touches[0],e.touches[1])/_lastTouches.dist)));
+    const m=_tmid(e.touches[0],e.touches[1]);
+    _zoomState.scale=ns; _zoomState.tx=_lastTouches.tx+(m.x-_lastTouches.mid.x); _zoomState.ty=_lastTouches.ty+(m.y-_lastTouches.mid.y);
     applyZoomTransform();
-
-  } else if (e.touches.length === 1 && _panStart && !_isPinching && _zoomState.scale > 1) {
+  } else if(e.touches.length===1&&_panStart&&!_isPinching&&_zoomState.scale>1){
     e.preventDefault();
-    const touch = e.touches[0];
-    _zoomState.tx = touch.clientX - _panStart.x;
-    _zoomState.ty = touch.clientY - _panStart.y;
+    const t=e.touches[0]; _zoomState.tx=t.clientX-_panStart.x; _zoomState.ty=t.clientY-_panStart.y;
     applyZoomTransform();
   }
-}, { passive: false });
+},{passive:false});
 
-svgEl.addEventListener('touchend', function(e) {
-  if (!isMobile()) return;
-  if (e.touches.length < 2) {
-    _isPinching = false;
-    _lastTouches = null;
-  }
-  if (e.touches.length === 0) _panStart = null;
-}, { passive: true });
+svgEl.addEventListener('touchend',function(e){
+  if(!isMobile()) return;
+  if(e.touches.length<2){_isPinching=false;_lastTouches=null;}
+  if(e.touches.length===0) _panStart=null;
+},{passive:true});
 
+// ── Bootstrap ─────────────────────────────────────────────────────────────────
+initFormPlacement();
 
 </script>
 </body>

@@ -1025,11 +1025,66 @@ async function init() {
     initDateFields();
     updateTimeDisplay();
     renderLiveChart();
+    // Auto-detect user location after chart is up (non-blocking)
+    autoDetectLocation();
   } catch(e) {
     document.getElementById('loading').innerHTML = '<div style="color:#ef5350;font-family:Cinzel,serif;font-size:0.75rem;letter-spacing:0.2em">Erro ao carregar ephemeris</div>';
   }
 }
 init();
+
+// ── Auto-detect geolocation ───────────────────────────────────────────────────
+async function autoDetectLocation() {
+  if (!navigator.geolocation) return;
+  const coordEl = document.getElementById('live-coords');
+  const locEl   = document.getElementById('live-loc');
+  // Show resolving indicator (small, non-intrusive)
+  if (coordEl) coordEl.innerHTML = '<span class="tz-resolving">⊙ Detectando localização…</span>';
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      const { latitude: lat, longitude: lng } = pos.coords;
+      try {
+        const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&extratags=1`;
+        const res  = await fetch(url, { headers: { 'Accept-Language': 'pt-BR,pt,en' } });
+        const data = await res.json();
+        const ianaZone = ianaFromNominatim(data);
+        const city     = data.address?.city || data.address?.town || data.address?.village || data.address?.county || data.name || '';
+        const country  = (data.address?.country_code || '').toUpperCase();
+        const state    = data.address?.state || '';
+        const label    = [city, state, country].filter(Boolean).join(', ');
+        // Update hidden fields + live state
+        document.getElementById('live-lat').value = lat;
+        document.getElementById('live-lng').value = lng;
+        document.getElementById('live-tz').value  = ianaZone;
+        if (locEl) locEl.value = label;
+        const today = new Date().toISOString().slice(0,10);
+        const dt    = DateTime.fromISO(`${today}T12:00`, { zone: ianaZone });
+        const tzNum = dt.isValid ? dt.offset / 60 : Math.round(lng / 15);
+        liveLocation = { lat, lng, tz: tzNum, ianaZone, name: label };
+        // Update coords display
+        const offsetLabel = fmtZoneOffset(ianaZone, today);
+        if (coordEl) coordEl.innerHTML = `${lat.toFixed(4)}, ${lng.toFixed(4)} · ${offsetLabel} <span class="tz-ok">✓ ${ianaZone}</span>`;
+        // Sync time fields to current local time
+        const now = new Date();
+        document.getElementById('live-hour').value = now.getHours();
+        document.getElementById('live-min').value  = now.getMinutes();
+        updateTimeDisplay();
+        renderLiveChart();
+      } catch(e) {
+        if (coordEl) coordEl.innerHTML = '<span class="tz-err">⚠ Localização detectada, cidade não identificada</span>';
+      }
+    },
+    () => {
+      // Permission denied or unavailable — clear the indicator silently
+      if (coordEl) {
+        const today = new Date().toISOString().slice(0,10);
+        const offsetLabel = fmtZoneOffset(liveLocation.ianaZone, today);
+        coordEl.innerHTML = `${liveLocation.lat.toFixed(4)}, ${liveLocation.lng.toFixed(4)} · ${offsetLabel} <span class="tz-ok">✓ ${liveLocation.ianaZone}</span>`;
+      }
+    },
+    { timeout: 8000, maximumAge: 300000 }
+  );
+}
 
 function initDateFields() {
   const now = new Date();

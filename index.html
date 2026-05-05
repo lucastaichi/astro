@@ -536,6 +536,10 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
 
   /* ── Zoom reset button ── */
   #btn-zoom-reset.visible { display:block; }
+
+  /* ── Location sheet: activate on mobile ── */
+  #loc-sheet { display:flex; bottom:var(--mob-bar-h); }
+  #loc-sheet-overlay.open { display:block; }
 }
 
 /* ══════════════════════════════════════════
@@ -550,7 +554,7 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
 }
 
 /* ══════════════════════════════════════════
-   LOCATION DROPDOWN (mobile quick-change)
+   LOCATION SHEET (mobile quick-change)
 ══════════════════════════════════════════ */
 #loc-btn {
   display:none; /* shown only on mobile */
@@ -562,44 +566,72 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
   white-space:nowrap; -webkit-tap-highlight-color:transparent;
 }
 #loc-btn:active { background:rgba(201,168,76,0.15); }
-#loc-dropdown {
+
+/* Bottom sheet — hidden globally, activated in mobile media query */
+#loc-sheet {
   display:none;
-  position:fixed; left:0; right:0;
-  top:calc(var(--header-h) + var(--timenav-h));
-  z-index:80;
-  background:#0f0d09; border-bottom:1px solid rgba(201,168,76,0.35);
-  padding:0.75rem 1rem 0.85rem;
-  box-shadow:0 6px 24px rgba(0,0,0,0.65);
+  position:fixed; left:0; right:0; z-index:62;
+  background:#0f0d09; border-radius:16px 16px 0 0;
+  border-top:1px solid rgba(201,168,76,0.3);
+  box-shadow:0 -8px 32px rgba(0,0,0,0.7);
+  flex-direction:column;
+  max-height:55vh;
+  transform:translateY(110%);
+  transition:transform 0.3s cubic-bezier(.4,0,.2,1);
 }
-#loc-dropdown.open { display:block; }
-#loc-dropdown-inner {
-  display:flex; align-items:center; gap:0.5rem;
+#loc-sheet.open { transform:translateY(0); }
+
+#loc-sheet-handle {
+  width:40px; height:4px; background:rgba(201,168,76,0.28); border-radius:2px;
+  margin:0.7rem auto 0; flex-shrink:0;
 }
-#loc-dropdown-input {
-  flex:1; background:rgba(201,168,76,0.07);
+#loc-sheet-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0.55rem 1rem 0.4rem; flex-shrink:0;
+  border-bottom:1px solid var(--line);
+}
+#loc-sheet-title {
+  font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.2em;
+  text-transform:uppercase; color:var(--gold);
+}
+#loc-sheet-actions { display:flex; align-items:center; gap:0.5rem; }
+#loc-sheet-geo {
+  font-family:'Cinzel',serif; font-size:0.48rem; letter-spacing:0.1em;
+  text-transform:uppercase; background:transparent;
+  border:1px solid rgba(201,168,76,0.3); color:var(--text-faint);
+  padding:0.22rem 0.6rem; border-radius:4px; cursor:pointer;
+  -webkit-tap-highlight-color:transparent; transition:all 0.15s;
+}
+#loc-sheet-geo:active { color:var(--gold); border-color:var(--gold); }
+#loc-sheet-close {
+  background:transparent; border:none; color:var(--text-faint);
+  font-size:1.1rem; cursor:pointer; padding:0.2rem 0.4rem; line-height:1;
+  -webkit-tap-highlight-color:transparent;
+}
+#loc-sheet-body {
+  padding:0.8rem 1rem 1rem; flex:1; overflow-y:auto;
+  -webkit-overflow-scrolling:touch; display:flex; flex-direction:column; gap:0.5rem;
+}
+#loc-sheet-input {
+  width:100%; background:rgba(201,168,76,0.07);
   border:1px solid rgba(201,168,76,0.3); color:var(--gold-pale);
   padding:0.55rem 0.7rem; font-family:'Crimson Pro',serif;
   font-size:1rem; border-radius:5px; outline:none;
   transition:border-color 0.15s; min-height:44px;
 }
-#loc-dropdown-input:focus { border-color:var(--gold); }
-#loc-dropdown-close {
-  background:transparent; border:1px solid rgba(201,168,76,0.2);
-  color:var(--text-faint); font-size:1.1rem; cursor:pointer;
-  width:36px; height:44px; border-radius:5px; flex-shrink:0;
-  display:flex; align-items:center; justify-content:center;
-  -webkit-tap-highlight-color:transparent;
+#loc-sheet-input:focus { border-color:var(--gold); }
+#loc-sheet-suggestions {
+  background:#1a1610; border:1px solid var(--line-s); border-radius:5px;
+  overflow-y:auto; display:none;
 }
-#loc-dropdown-close:active { background:rgba(201,168,76,0.15); color:var(--gold); }
-#loc-dropdown-suggestions {
-  margin-top:6px; background:#1a1610;
-  border:1px solid var(--line-s); border-radius:5px;
-  max-height:200px; overflow-y:auto; display:none;
+#loc-sheet-suggestions.open { display:block; }
+#loc-sheet-status {
+  font-size:0.72rem; color:var(--text-faint); font-style:italic; min-height:1rem;
 }
-#loc-dropdown-suggestions.open { display:block; }
-#loc-dropdown-status {
-  font-size:0.72rem; color:var(--text-faint); font-style:italic;
-  margin-top:0.35rem; min-height:1rem;
+/* overlay for loc sheet */
+#loc-sheet-overlay {
+  display:none; position:fixed; inset:0; z-index:61;
+  background:rgba(0,0,0,0.4);
 }
 </style>
 </head>
@@ -2211,26 +2243,33 @@ svgEl.addEventListener('touchend',function(e){
 },{passive:true});
 
 
-// ── Location quick-change dropdown (mobile) ───────────────────────────────────
+// ── Location quick-change sheet (mobile) ─────────────────────────────────────
 window.openLocDropdown = function() {
-  const inp = document.getElementById('loc-dropdown-input');
+  const inp = document.getElementById('loc-sheet-input');
   inp.value = liveLocation.name;
-  document.getElementById('loc-dropdown-status').textContent = '';
-  document.getElementById('loc-dropdown-suggestions').classList.remove('open');
-  document.getElementById('loc-dropdown').classList.add('open');
+  document.getElementById('loc-sheet-status').textContent = '';
+  document.getElementById('loc-sheet-suggestions').classList.remove('open');
+  document.getElementById('loc-sheet').classList.add('open');
+  document.getElementById('loc-sheet-overlay').classList.add('open');
   setTimeout(() => { inp.focus(); inp.select(); }, 60);
 };
 
 window.closeLocDropdown = function() {
-  document.getElementById('loc-dropdown').classList.remove('open');
-  document.getElementById('loc-dropdown-suggestions').classList.remove('open');
+  document.getElementById('loc-sheet').classList.remove('open');
+  document.getElementById('loc-sheet-overlay').classList.remove('open');
+  document.getElementById('loc-sheet-suggestions').classList.remove('open');
+};
+
+window.resetToGeoLocation = function() {
+  closeLocDropdown();
+  autoDetectLocation();
 };
 
 let _locDdTimer = null;
 window.locDropdownSearch = function(query) {
   clearTimeout(_locDdTimer);
-  const sugEl    = document.getElementById('loc-dropdown-suggestions');
-  const statusEl = document.getElementById('loc-dropdown-status');
+  const sugEl    = document.getElementById('loc-sheet-suggestions');
+  const statusEl = document.getElementById('loc-sheet-status');
   if (query.length < 3) { sugEl.classList.remove('open'); statusEl.textContent = ''; return; }
   statusEl.innerHTML = '<span class="tz-resolving">buscando…</span>';
   _locDdTimer = setTimeout(async () => {
@@ -2268,15 +2307,25 @@ initFormPlacement();
 
 </script>
 
-<!-- Location dropdown (mobile) -->
-<div id="loc-dropdown">
-  <div id="loc-dropdown-inner">
-    <input id="loc-dropdown-input" type="text" placeholder="Digite uma cidade…"
-           autocomplete="off" oninput="locDropdownSearch(this.value)">
-    <button id="loc-dropdown-close" onclick="closeLocDropdown()">✕</button>
+<!-- Location overlay -->
+<div id="loc-sheet-overlay" onclick="closeLocDropdown()"></div>
+
+<!-- Location bottom sheet (mobile) -->
+<div id="loc-sheet">
+  <div id="loc-sheet-handle"></div>
+  <div id="loc-sheet-header">
+    <span id="loc-sheet-title">📍 Localização</span>
+    <div id="loc-sheet-actions">
+      <button id="loc-sheet-geo" onclick="resetToGeoLocation()">AGORA</button>
+      <button id="loc-sheet-close" onclick="closeLocDropdown()">✕</button>
+    </div>
   </div>
-  <div id="loc-dropdown-suggestions"></div>
-  <div id="loc-dropdown-status"></div>
+  <div id="loc-sheet-body">
+    <input id="loc-sheet-input" type="text" placeholder="Digite uma cidade…"
+           autocomplete="off" oninput="locDropdownSearch(this.value)">
+    <div id="loc-sheet-suggestions"></div>
+    <div id="loc-sheet-status"></div>
+  </div>
 </div>
 
 </body>

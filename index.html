@@ -466,7 +466,6 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
   .nav-btn { width:28px; height:28px; font-size:0.65rem; }
   .nav-sep { margin:0 0.25rem; }
   .now-btn { font-size:0.5rem; padding:0.25rem 0.6rem; margin-left:0.4rem; }
-  #loc-btn  { display:flex; }
 
   /* Hide duplicate right-side groups AND year groups on mobile */
   .time-nav-right { display:none !important; }
@@ -550,56 +549,47 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
 }
 
 /* ══════════════════════════════════════════
-   LOCATION DROPDOWN (mobile quick-change)
+   LOCATION MODAL (mobile quick-change)
 ══════════════════════════════════════════ */
-#loc-btn {
-  display:none; /* shown only on mobile */
-  font-family:'Cinzel',serif; font-size:0.5rem; letter-spacing:0.1em;
-  padding:0.28rem 0.7rem; background:transparent;
-  border:1px solid var(--line-s); color:var(--gold);
-  cursor:pointer; border-radius:3px; text-transform:uppercase;
-  transition:all 0.15s; margin-left:0.4rem; flex-shrink:0;
-  white-space:nowrap; -webkit-tap-highlight-color:transparent;
+#loc-modal-backdrop {
+  display:none; position:fixed; inset:0; z-index:200;
+  background:rgba(0,0,0,0.6); backdrop-filter:blur(3px);
 }
-#loc-btn:active { background:rgba(201,168,76,0.15); }
-#loc-dropdown {
-  display:none;
-  position:fixed; left:0; right:0;
-  top:calc(var(--header-h) + var(--timenav-h));
-  z-index:80;
-  background:#0f0d09; border-bottom:1px solid rgba(201,168,76,0.35);
-  padding:0.75rem 1rem 0.85rem;
-  box-shadow:0 6px 24px rgba(0,0,0,0.65);
+#loc-modal-backdrop.open { display:block; }
+#loc-modal {
+  position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
+  z-index:201; width:min(88vw, 340px);
+  background:#0f0d09; border:1px solid rgba(201,168,76,0.35);
+  border-radius:10px; padding:1.1rem 1rem 0.9rem;
+  box-shadow:0 8px 32px rgba(0,0,0,0.7);
 }
-#loc-dropdown.open { display:block; }
-#loc-dropdown-inner {
-  display:flex; align-items:center; gap:0.5rem;
+.loc-modal-title {
+  font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.22em;
+  text-transform:uppercase; color:var(--gold); margin-bottom:0.8rem;
+  display:flex; align-items:center; justify-content:space-between;
 }
-#loc-dropdown-input {
-  flex:1; background:rgba(201,168,76,0.07);
+#loc-modal-close {
+  background:transparent; border:none; color:var(--text-faint);
+  font-size:1.1rem; cursor:pointer; padding:0 0.2rem; line-height:1;
+  -webkit-tap-highlight-color:transparent;
+}
+#loc-modal-input {
+  width:100%; background:rgba(201,168,76,0.07);
   border:1px solid rgba(201,168,76,0.3); color:var(--gold-pale);
   padding:0.55rem 0.7rem; font-family:'Crimson Pro',serif;
   font-size:1rem; border-radius:5px; outline:none;
-  transition:border-color 0.15s; min-height:44px;
+  transition:border-color 0.15s;
 }
-#loc-dropdown-input:focus { border-color:var(--gold); }
-#loc-dropdown-close {
-  background:transparent; border:1px solid rgba(201,168,76,0.2);
-  color:var(--text-faint); font-size:1.1rem; cursor:pointer;
-  width:36px; height:44px; border-radius:5px; flex-shrink:0;
-  display:flex; align-items:center; justify-content:center;
-  -webkit-tap-highlight-color:transparent;
-}
-#loc-dropdown-close:active { background:rgba(201,168,76,0.15); color:var(--gold); }
-#loc-dropdown-suggestions {
-  margin-top:6px; background:#1a1610;
+#loc-modal-input:focus { border-color:var(--gold); }
+#loc-modal-suggestions {
+  margin-top:4px; background:#1a1610;
   border:1px solid var(--line-s); border-radius:5px;
-  max-height:200px; overflow-y:auto; display:none;
+  max-height:210px; overflow-y:auto; display:none;
 }
-#loc-dropdown-suggestions.open { display:block; }
-#loc-dropdown-status {
+#loc-modal-suggestions.open { display:block; }
+#loc-modal-status {
   font-size:0.72rem; color:var(--text-faint); font-style:italic;
-  margin-top:0.35rem; min-height:1rem;
+  margin-top:0.45rem; min-height:1rem;
 }
 </style>
 </head>
@@ -663,7 +653,6 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
   </div>
 
   <button class="now-btn" onclick="goNow()">Agora</button>
-  <button id="loc-btn" onclick="openLocDropdown()">📍 Local</button>
 </div>
 
 <!-- Panel overlay (mobile/tablet backdrop) -->
@@ -1200,7 +1189,7 @@ function updateTimeDisplay() {
   const timeStr = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
   const tz = liveLocation.tz;
   document.getElementById('time-display').innerHTML =
-    `${dateStr} · ${timeStr}<span>UTC${tz >= 0 ? '+' : ''}${tz} · ${liveLocation.name}</span>`;
+    `${dateStr} · ${timeStr}<span>UTC${tz >= 0 ? '+' : ''}${tz} · <span id="live-loc-trigger" onclick="openLocModal()" style="text-decoration:underline dotted;cursor:pointer;">${liveLocation.name}</span></span>`;
 }
 
 // ── Location search (Nominatim/OSM) ───────────────────────────────────────────
@@ -2211,29 +2200,30 @@ svgEl.addEventListener('touchend',function(e){
 },{passive:true});
 
 
-// ── Location quick-change dropdown (mobile) ───────────────────────────────────
-window.openLocDropdown = function() {
-  const inp = document.getElementById('loc-dropdown-input');
-  inp.value = liveLocation.name;
-  document.getElementById('loc-dropdown-status').textContent = '';
-  document.getElementById('loc-dropdown-suggestions').classList.remove('open');
-  document.getElementById('loc-dropdown').classList.add('open');
-  setTimeout(() => { inp.focus(); inp.select(); }, 60);
+// ── Location quick-change modal ───────────────────────────────────────────────
+window.openLocModal = function() {
+  const input  = document.getElementById('loc-modal-input');
+  const status = document.getElementById('loc-modal-status');
+  input.value  = liveLocation.name;
+  status.textContent = '';
+  document.getElementById('loc-modal-suggestions').classList.remove('open');
+  document.getElementById('loc-modal-backdrop').classList.add('open');
+  setTimeout(() => { input.focus(); input.select(); }, 80);
 };
 
-window.closeLocDropdown = function() {
-  document.getElementById('loc-dropdown').classList.remove('open');
-  document.getElementById('loc-dropdown-suggestions').classList.remove('open');
+window.closeLocModal = function() {
+  document.getElementById('loc-modal-backdrop').classList.remove('open');
+  document.getElementById('loc-modal-suggestions').classList.remove('open');
 };
 
-let _locDdTimer = null;
-window.locDropdownSearch = function(query) {
-  clearTimeout(_locDdTimer);
-  const sugEl    = document.getElementById('loc-dropdown-suggestions');
-  const statusEl = document.getElementById('loc-dropdown-status');
+let _locModalTimer = null;
+window.locModalSearch = function(query) {
+  clearTimeout(_locModalTimer);
+  const sugEl    = document.getElementById('loc-modal-suggestions');
+  const statusEl = document.getElementById('loc-modal-status');
   if (query.length < 3) { sugEl.classList.remove('open'); statusEl.textContent = ''; return; }
   statusEl.innerHTML = '<span class="tz-resolving">buscando…</span>';
-  _locDdTimer = setTimeout(async () => {
+  _locModalTimer = setTimeout(async () => {
     try {
       const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=6&featuretype=city&addressdetails=1&extratags=1`;
       const res  = await fetch(url, { headers: { 'Accept-Language': 'pt-BR,pt,en' } });
@@ -2252,7 +2242,7 @@ window.locDropdownSearch = function(query) {
         const div = document.createElement('div');
         div.className = 'loc-item';
         div.innerHTML = `${city || r.name}<small>${state ? state+', ' : ''}${country}</small>`;
-        div.onclick = () => { selectLocation('live', lat, lng, iana, label); closeLocDropdown(); };
+        div.onclick = () => { selectLocation('live', lat, lng, iana, label); window.closeLocModal(); };
         sugEl.appendChild(div);
       }
       sugEl.classList.add('open');
@@ -2268,15 +2258,17 @@ initFormPlacement();
 
 </script>
 
-<!-- Location dropdown (mobile) -->
-<div id="loc-dropdown">
-  <div id="loc-dropdown-inner">
-    <input id="loc-dropdown-input" type="text" placeholder="Digite uma cidade…"
-           autocomplete="off" oninput="locDropdownSearch(this.value)">
-    <button id="loc-dropdown-close" onclick="closeLocDropdown()">✕</button>
+<!-- Location quick-change modal (mobile) -->
+<div id="loc-modal-backdrop" onclick="closeLocModal()"></div>
+<div id="loc-modal">
+  <div class="loc-modal-title">
+    Localização
+    <button id="loc-modal-close" onclick="closeLocModal()">✕</button>
   </div>
-  <div id="loc-dropdown-suggestions"></div>
-  <div id="loc-dropdown-status"></div>
+  <input id="loc-modal-input" type="text" placeholder="Digite uma cidade…" autocomplete="off"
+         oninput="locModalSearch(this.value)">
+  <div id="loc-modal-suggestions"></div>
+  <div id="loc-modal-status"></div>
 </div>
 
 </body>

@@ -404,20 +404,6 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
 }
 
 /* ══════════════════════════════════════════
-   LOCATION DROPDOWN (mobile quick-change)
-══════════════════════════════════════════ */
-#loc-btn {
-  display:none; /* shown only on mobile */
-  font-family:'Cinzel',serif; font-size:0.5rem; letter-spacing:0.1em;
-  padding:0.28rem 0.7rem; background:transparent;
-  border:1px solid var(--line-s); color:var(--gold);
-  cursor:pointer; border-radius:3px; text-transform:uppercase;
-  transition:all 0.15s; margin-left:0.4rem; flex-shrink:0;
-  white-space:nowrap; -webkit-tap-highlight-color:transparent;
-}
-#loc-btn:active { background:rgba(201,168,76,0.15); }
-
-/* ══════════════════════════════════════════
    TABLET  768–1023px
 ══════════════════════════════════════════ */
 @media (max-width:1023px) {
@@ -563,6 +549,19 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
   .mob-bar-btn .mbb-icon { font-size:1.15rem; }
 }
 
+/* ══════════════════════════════════════════
+   LOCATION DROPDOWN (mobile quick-change)
+══════════════════════════════════════════ */
+#loc-btn {
+  display:none; /* shown only on mobile */
+  font-family:'Cinzel',serif; font-size:0.5rem; letter-spacing:0.1em;
+  padding:0.28rem 0.7rem; background:transparent;
+  border:1px solid var(--line-s); color:var(--gold);
+  cursor:pointer; border-radius:3px; text-transform:uppercase;
+  transition:all 0.15s; margin-left:0.4rem; flex-shrink:0;
+  white-space:nowrap; -webkit-tap-highlight-color:transparent;
+}
+#loc-btn:active { background:rgba(201,168,76,0.15); }
 #loc-dropdown {
   display:none;
   position:fixed; left:0; right:0;

@@ -547,6 +547,50 @@ body { font-family:'Crimson Pro',serif; background:var(--ink); color:#e8d5a0; mi
   .mob-bar-btn { justify-content:center; }
   .mob-bar-btn .mbb-icon { font-size:1.15rem; }
 }
+
+/* ══════════════════════════════════════════
+   LOCATION MODAL (mobile quick-change)
+══════════════════════════════════════════ */
+#loc-modal-backdrop {
+  display:none; position:fixed; inset:0; z-index:200;
+  background:rgba(0,0,0,0.6); backdrop-filter:blur(3px);
+}
+#loc-modal-backdrop.open { display:block; }
+#loc-modal {
+  position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
+  z-index:201; width:min(88vw, 340px);
+  background:#0f0d09; border:1px solid rgba(201,168,76,0.35);
+  border-radius:10px; padding:1.1rem 1rem 0.9rem;
+  box-shadow:0 8px 32px rgba(0,0,0,0.7);
+}
+.loc-modal-title {
+  font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.22em;
+  text-transform:uppercase; color:var(--gold); margin-bottom:0.8rem;
+  display:flex; align-items:center; justify-content:space-between;
+}
+#loc-modal-close {
+  background:transparent; border:none; color:var(--text-faint);
+  font-size:1.1rem; cursor:pointer; padding:0 0.2rem; line-height:1;
+  -webkit-tap-highlight-color:transparent;
+}
+#loc-modal-input {
+  width:100%; background:rgba(201,168,76,0.07);
+  border:1px solid rgba(201,168,76,0.3); color:var(--gold-pale);
+  padding:0.55rem 0.7rem; font-family:'Crimson Pro',serif;
+  font-size:1rem; border-radius:5px; outline:none;
+  transition:border-color 0.15s;
+}
+#loc-modal-input:focus { border-color:var(--gold); }
+#loc-modal-suggestions {
+  margin-top:4px; background:#1a1610;
+  border:1px solid var(--line-s); border-radius:5px;
+  max-height:210px; overflow-y:auto; display:none;
+}
+#loc-modal-suggestions.open { display:block; }
+#loc-modal-status {
+  font-size:0.72rem; color:var(--text-faint); font-style:italic;
+  margin-top:0.45rem; min-height:1rem;
+}
 </style>
 </head>
 <body>
@@ -1145,7 +1189,7 @@ function updateTimeDisplay() {
   const timeStr = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
   const tz = liveLocation.tz;
   document.getElementById('time-display').innerHTML =
-    `${dateStr} · ${timeStr}<span>UTC${tz >= 0 ? '+' : ''}${tz} · ${liveLocation.name}</span>`;
+    `${dateStr} · ${timeStr}<span>UTC${tz >= 0 ? '+' : ''}${tz} · <span id="live-loc-trigger" onclick="openLocModal()" style="text-decoration:underline dotted;cursor:pointer;">${liveLocation.name}</span></span>`;
 }
 
 // ── Location search (Nominatim/OSM) ───────────────────────────────────────────
@@ -2155,9 +2199,77 @@ svgEl.addEventListener('touchend',function(e){
   if(e.touches.length===0) _panStart=null;
 },{passive:true});
 
+
+// ── Location quick-change modal ───────────────────────────────────────────────
+window.openLocModal = function() {
+  const input  = document.getElementById('loc-modal-input');
+  const status = document.getElementById('loc-modal-status');
+  input.value  = liveLocation.name;
+  status.textContent = '';
+  document.getElementById('loc-modal-suggestions').classList.remove('open');
+  document.getElementById('loc-modal-backdrop').classList.add('open');
+  setTimeout(() => { input.focus(); input.select(); }, 80);
+};
+
+window.closeLocModal = function() {
+  document.getElementById('loc-modal-backdrop').classList.remove('open');
+  document.getElementById('loc-modal-suggestions').classList.remove('open');
+};
+
+let _locModalTimer = null;
+window.locModalSearch = function(query) {
+  clearTimeout(_locModalTimer);
+  const sugEl    = document.getElementById('loc-modal-suggestions');
+  const statusEl = document.getElementById('loc-modal-status');
+  if (query.length < 3) { sugEl.classList.remove('open'); statusEl.textContent = ''; return; }
+  statusEl.innerHTML = '<span class="tz-resolving">buscando…</span>';
+  _locModalTimer = setTimeout(async () => {
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=6&featuretype=city&addressdetails=1&extratags=1`;
+      const res  = await fetch(url, { headers: { 'Accept-Language': 'pt-BR,pt,en' } });
+      const data = await res.json();
+      sugEl.innerHTML = '';
+      statusEl.textContent = '';
+      if (!data.length) { sugEl.classList.remove('open'); statusEl.textContent = 'Cidade não encontrada.'; return; }
+      for (const r of data) {
+        const lat     = parseFloat(r.lat);
+        const lng     = parseFloat(r.lon);
+        const iana    = ianaFromNominatim(r);
+        const city    = r.address?.city || r.address?.town || r.address?.village || r.name;
+        const country = (r.address?.country_code || '').toUpperCase();
+        const state   = r.address?.state || '';
+        const label   = [city, state, country].filter(Boolean).join(', ');
+        const div = document.createElement('div');
+        div.className = 'loc-item';
+        div.innerHTML = `${city || r.name}<small>${state ? state+', ' : ''}${country}</small>`;
+        div.onclick = () => { selectLocation('live', lat, lng, iana, label); window.closeLocModal(); };
+        sugEl.appendChild(div);
+      }
+      sugEl.classList.add('open');
+    } catch(e) {
+      statusEl.innerHTML = '<span class="tz-err">Erro na busca</span>';
+      sugEl.classList.remove('open');
+    }
+  }, 320);
+};
+
 // ── Bootstrap ─────────────────────────────────────────────────────────────────
 initFormPlacement();
 
 </script>
+
+<!-- Location quick-change modal (mobile) -->
+<div id="loc-modal-backdrop" onclick="closeLocModal()"></div>
+<div id="loc-modal">
+  <div class="loc-modal-title">
+    Localização
+    <button id="loc-modal-close" onclick="closeLocModal()">✕</button>
+  </div>
+  <input id="loc-modal-input" type="text" placeholder="Digite uma cidade…" autocomplete="off"
+         oninput="locModalSearch(this.value)">
+  <div id="loc-modal-suggestions"></div>
+  <div id="loc-modal-status"></div>
+</div>
+
 </body>
 </html>

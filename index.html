@@ -1162,8 +1162,22 @@ async function autoDetectLocation() {
       }
     },
     () => {
-      // Permission denied or unavailable — clear the indicator silently
-      if (coordEl) {
+      // Permission denied or unavailable — fall back to device IANA zone via Intl
+      const deviceZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (deviceZone && isValidIANA(deviceZone)) {
+        const today = new Date().toISOString().slice(0,10);
+        const dt    = DateTime.fromISO(`${today}T12:00`, { zone: deviceZone });
+        const tzNum = dt.isValid ? dt.offset / 60 : liveLocation.tz;
+        liveLocation = { ...liveLocation, tz: tzNum, ianaZone: deviceZone };
+        // Update hidden tz field
+        const tzEl = document.getElementById('live-tz');
+        if (tzEl) tzEl.value = deviceZone;
+        // Update time display with corrected zone
+        updateTimeDisplay();
+        const offsetLabel = fmtZoneOffset(deviceZone, today);
+        if (coordEl) coordEl.innerHTML =
+          `${liveLocation.lat.toFixed(4)}, ${liveLocation.lng.toFixed(4)} · ${offsetLabel} <span class="tz-ok">✓ ${deviceZone}</span>`;
+      } else if (coordEl) {
         const today = new Date().toISOString().slice(0,10);
         const offsetLabel = fmtZoneOffset(liveLocation.ianaZone, today);
         coordEl.innerHTML = `${liveLocation.lat.toFixed(4)}, ${liveLocation.lng.toFixed(4)} · ${offsetLabel} <span class="tz-ok">✓ ${liveLocation.ianaZone}</span>`;
@@ -1174,11 +1188,21 @@ async function autoDetectLocation() {
 }
 
 function initDateFields() {
-  const now = new Date();
-  const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  // Apply device IANA zone immediately so display is correct before geoloc resolves
+  const deviceZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  if (deviceZone && isValidIANA(deviceZone)) {
+    const today0 = new Date().toISOString().slice(0,10);
+    const dt0    = DateTime.fromISO(`${today0}T12:00`, { zone: deviceZone });
+    const tzNum  = dt0.isValid ? dt0.offset / 60 : liveLocation.tz;
+    liveLocation = { ...liveLocation, tz: tzNum, ianaZone: deviceZone };
+    const tzEl = document.getElementById('live-tz');
+    if (tzEl) tzEl.value = deviceZone;
+  }
+  const now = DateTime.now().setZone(liveLocation.ianaZone);
+  const fmt = d => `${d.year}-${String(d.month).padStart(2,'0')}-${String(d.day).padStart(2,'0')}`;
   document.getElementById('live-date').value = fmt(now);
-  document.getElementById('live-hour').value = now.getHours();
-  document.getElementById('live-min').value  = now.getMinutes();
+  document.getElementById('live-hour').value = now.hour;
+  document.getElementById('live-min').value  = now.minute;
   document.getElementById('t-date').value    = fmt(now);
   document.getElementById('live-loc').value  = liveLocation.name;
   const today = fmt(now);
